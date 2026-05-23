@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -77,9 +78,7 @@ class HomeHeader extends StatelessWidget {
               _buildIconButton(
                 iconPath: AppAssets.bell,
                 fallbackIcon: Icons.notifications_none_rounded,
-                onPressed: () {
-                  // Action for notifications
-                },
+                onPressed: () => context.push('/notifications'),
               ),
               Positioned(
                 top: -4,
@@ -115,9 +114,7 @@ class HomeHeader extends StatelessWidget {
           _buildIconButton(
             iconPath: AppAssets.settings,
             fallbackIcon: Icons.settings_outlined,
-            onPressed: () {
-              // Action for settings
-            },
+            onPressed: () => context.push('/profile-settings'),
           ),
         ],
       ),

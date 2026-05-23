@@ -42,25 +42,18 @@ class VerificationCompletedView extends StatelessWidget {
                   children: [
                     // 1. Success Illustration
                     Center(
-                      child: Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFECFDF5), // Soft emerald background
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        padding: const EdgeInsets.all(28.0),
-                        child: Image.asset(
+                      child:   Image.asset(
                           AppAssets.verificationCompleted,
                           fit: BoxFit.contain,
+                          height: 220,
+                          width: 260,
                           errorBuilder: (context, error, stackTrace) => const Icon(
                             Icons.check_circle_rounded,
                             color: Color(0xFF10B981),
-                            size: 80,
+                            size: 60,
                           ),
-                        ),
-                      ),
-                    ),
+                      )),
+                      
                     const SizedBox(height: 36),
                     
                     // 2. Titles
