@@ -9,7 +9,7 @@ import '../widgets/verify_identity_step.dart';
 class ApplicationProcessView extends StatelessWidget {
   final Map<String, dynamic> product;
   final String plan;
-  final Map<String, String> branch;
+  final Map<String, dynamic> branch;
 
   const ApplicationProcessView({
     super.key,

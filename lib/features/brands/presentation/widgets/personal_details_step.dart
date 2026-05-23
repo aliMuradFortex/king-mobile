@@ -30,6 +30,15 @@ class PersonalDetailsStep extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // Father's Name Text Field
+          _buildTextField(
+            controller: controller.fatherNameController,
+            hintText: "Father's Name (as per CNIC)",
+            keyboardType: TextInputType.name,
+            icon: Icons.person_outline_rounded,
+          ),
+          const SizedBox(height: 16),
+
           // Phone Number Text Field
           _buildPhoneField(),
           const SizedBox(height: 16),

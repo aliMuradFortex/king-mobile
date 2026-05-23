@@ -1,48 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/network/api_service.dart';
 import '../../../../core/network/dio_api_service.dart';
 
 import '../../../../core/widgets/custom_snackbar.dart';
 
-class RegisterController extends GetxController {
-  final TextEditingController phoneController = TextEditingController();
-  final RxString verificationMethod = 'SMS'.obs;
+class SetPinController extends GetxController {
+  final RxString pin = ''.obs;
   final RxBool isLoading = false.obs;
 
   final ApiService _apiService = DioApiService();
 
-  @override
-  void onClose() {
-    phoneController.dispose();
-    super.onClose();
+  void addDigit(String digit) {
+    if (pin.value.length < 4) {
+      pin.value += digit;
+    }
   }
 
-  void setMethod(String method) {
-    verificationMethod.value = method;
+  void removeDigit() {
+    if (pin.value.isNotEmpty) {
+      pin.value = pin.value.substring(0, pin.value.length - 1);
+    }
   }
 
-  void submit(BuildContext context) async {
-    final phone = phoneController.text.trim();
-    if (phone.isEmpty) {
+  void submitPin(BuildContext context) async {
+    if (pin.value.length < 4) {
       CustomSnackBar.show(
         context,
-        title: 'Required',
-        message: 'Please enter your phone number to continue.',
+        title: 'Incomplete PIN',
+        message: 'Please enter a 4-digit security PIN.',
         isError: true,
       );
       return;
     }
-    
+
     try {
       isLoading.value = true;
-      final response = await _apiService.sendOtp(phone);
+      final response = await _apiService.setPin(pin.value);
       isLoading.value = false;
 
       final success = response['success'] as bool? ?? false;
-      final message = response['message'] as String? ?? 'OTP sent successfully.';
+      final message = response['message'] as String? ?? 'PIN set successfully.';
 
       if (success) {
         CustomSnackBar.show(
@@ -51,14 +50,14 @@ class RegisterController extends GetxController {
           message: message,
           isError: false,
         );
-        // Route to verification screen under the registration flow, passing phone
+        // Navigate to verification completed screen for registration flow
         if (context.mounted) {
-          context.push('/verify-phone?flow=registration&phone=$phone');
+          context.push('/verification-complete?flow=registration');
         }
       } else {
         CustomSnackBar.show(
           context,
-          title: 'Error',
+          title: 'Failed',
           message: message,
           isError: true,
         );
@@ -67,7 +66,7 @@ class RegisterController extends GetxController {
       isLoading.value = false;
       CustomSnackBar.show(
         context,
-        title: 'Connection Error',
+        title: 'Error',
         message: e.toString(),
         isError: true,
       );

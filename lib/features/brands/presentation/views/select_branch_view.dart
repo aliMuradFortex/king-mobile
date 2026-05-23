@@ -107,6 +107,49 @@ class SelectBranchView extends StatelessWidget {
           // 2. Scrollable list of branches
           Expanded(
             child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                );
+              }
+
+              if (controller.errorMessage.isNotEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          color: Colors.redAccent,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          controller.errorMessage.value,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => controller.fetchBranches(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                          ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               final branchList = controller.filteredBranches;
               final selectedId = controller.selectedBranchId.value;
 
@@ -128,10 +171,10 @@ class SelectBranchView extends StatelessWidget {
                 itemCount: branchList.length,
                 itemBuilder: (context, index) {
                   final branch = branchList[index];
-                  final id = branch['id']!;
+                  final id = branch['id'];
                   return BranchCard(
-                    name: branch['name']!,
-                    address: branch['address']!,
+                    name: branch['name']?.toString() ?? '',
+                    address: branch['address']?.toString() ?? '',
                     isSelected: selectedId == id,
                     onTap: () => controller.selectBranch(id),
                   );

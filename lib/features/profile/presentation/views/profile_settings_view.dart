@@ -57,7 +57,7 @@ class ProfileSettingsView extends StatelessWidget {
               // 1. Mini Profile Header
               _buildMiniHeader(),
               const SizedBox(height: 24),
-              
+
               // 2. Account Settings Section
               _buildSectionHeader(AppStrings.accountSettingsSection),
               const SizedBox(height: 8),
@@ -88,7 +88,7 @@ class ProfileSettingsView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // 3. Preferences Section
               _buildSectionHeader(AppStrings.preferencesSection),
               const SizedBox(height: 8),
@@ -115,7 +115,7 @@ class ProfileSettingsView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // 4. Security Section
               _buildSectionHeader(AppStrings.securitySection),
               const SizedBox(height: 8),
@@ -145,7 +145,7 @@ class ProfileSettingsView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // 5. Support Section
               _buildSectionHeader(AppStrings.supportSection),
               const SizedBox(height: 8),
@@ -177,7 +177,7 @@ class ProfileSettingsView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // 6. Outlined Logout Button
               _buildOutlinedLogoutButton(context),
               const SizedBox(height: 24),
@@ -200,10 +200,7 @@ class ProfileSettingsView extends StatelessWidget {
               height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFF1F5F9),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFFF1F5F9), width: 2),
               ),
               child: ClipOval(
                 child: Image.asset(
@@ -217,7 +214,7 @@ class ProfileSettingsView extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Gold checkmark badge overlay
             Positioned(
               bottom: 1,
@@ -245,7 +242,7 @@ class ProfileSettingsView extends StatelessWidget {
           ],
         ),
         const SizedBox(width: 16),
-        
+
         // Name & Phone
         Expanded(
           child: Column(
@@ -318,7 +315,7 @@ class ProfileSettingsView extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            
+
             // Labels
             Expanded(
               child: Column(
@@ -346,7 +343,7 @@ class ProfileSettingsView extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Trailing Chevron or Text info
             if (trailingText != null)
               Text(
@@ -387,14 +384,10 @@ class ProfileSettingsView extends StatelessWidget {
               color: Color(0xFFDBEAFE),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF1E3A8A),
-              size: 20,
-            ),
+            child: Icon(icon, color: const Color(0xFF1E3A8A), size: 20),
           ),
           const SizedBox(width: 14),
-          
+
           // Label
           Expanded(
             child: Text(
@@ -406,7 +399,7 @@ class ProfileSettingsView extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Switch widget
           Switch(
             value: value,
@@ -430,35 +423,53 @@ class ProfileSettingsView extends StatelessWidget {
   }
 
   Widget _buildOutlinedLogoutButton(BuildContext context) {
+    final controller = Get.find<ProfileSettingsController>();
     return OutlinedButton(
       onPressed: () {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Logout'),
-            content: const Text('Are you sure you want to logout?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  context.go('/register');
-                },
-                child: const Text('Logout', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
+          barrierDismissible: false,
+          builder: (dialogContext) => Obx(() {
+            final isLoading = controller.isLoading.value;
+            return AlertDialog(
+              title: const Text('Logout'),
+              content: const Text('Are you sure you want to logout?'),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => controller.logout(dialogContext),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.red,
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                ),
+              ],
+            );
+          }),
         );
       },
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.red,
         side: const BorderSide(color: Color(0xFFCBD5E1), width: 1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
         padding: const EdgeInsets.symmetric(vertical: 16.0),
       ),
       child: Row(

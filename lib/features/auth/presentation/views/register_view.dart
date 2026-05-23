@@ -5,7 +5,6 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../controllers/register_controller.dart';
 import '../widgets/phone_input_field.dart';
-import '../widgets/verification_method_card.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -108,46 +107,10 @@ class RegisterView extends StatelessWidget {
                 
                 // 5. Custom Phone Input Field
                 PhoneInputField(controller: controller.phoneController),
-                const SizedBox(height: 28),
+                const SizedBox(height: 36),
                 
-                // 6. Verification Code Section Label
-                Text(
-                  AppStrings.receiveCodeLabel,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontSize: 12,
-                        letterSpacing: 1.2,
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                
-                // 7. Method Choice Cards (SMS vs WhatsApp)
-                Obx(() {
-                  final isSMS = controller.verificationMethod.value == 'SMS';
-                  
-                  return Row(
-                    children: [
-                      VerificationMethodCard(
-                        title: AppStrings.receiveViaSMS,
-                        iconPath: AppAssets.sms,
-                        isSelected: isSMS,
-                        onTap: () => controller.setMethod('SMS'),
-                      ),
-                      const SizedBox(width: 16),
-                      VerificationMethodCard(
-                        title: AppStrings.receiveViaWhatsApp,
-                        iconPath: AppAssets.whatsapp,
-                        isSelected: !isSMS,
-                        onTap: () => controller.setMethod('WhatsApp'),
-                      ),
-                    ],
-                  );
-                }),
-                const SizedBox(height: 48),
-                
-                ElevatedButton(
-                  onPressed: () => controller.submit(context),
+                Obx(() => ElevatedButton(
+                  onPressed: controller.isLoading.value ? null : () => controller.submit(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -157,21 +120,30 @@ class RegisterView extends StatelessWidget {
                     ),
                     elevation: 2,
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        AppStrings.continueText,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  child: controller.isLoading.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppStrings.continueText,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward, size: 18),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward, size: 18),
-                    ],
-                  ),
-                ),
+                )),
               ],
             ),
           ),

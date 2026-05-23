@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
+import '../controllers/profile_settings_controller.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -12,6 +13,7 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeController = Get.find<HomeController>();
+    Get.put(ProfileSettingsController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -54,7 +56,7 @@ class ProfileView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
-              
+
               // 1. Large Circle Avatar with Verified gold Badge overlay
               Center(
                 child: Stack(
@@ -81,15 +83,16 @@ class ProfileView extends StatelessWidget {
                         child: Image.asset(
                           AppAssets.person,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.account_circle,
-                            size: 120,
-                            color: AppColors.textMuted,
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.account_circle,
+                                size: 120,
+                                color: AppColors.textMuted,
+                              ),
                         ),
                       ),
                     ),
-                    
+
                     // Verified gold checkmark badge
                     Positioned(
                       bottom: 4,
@@ -106,11 +109,12 @@ class ProfileView extends StatelessWidget {
                         child: Image.asset(
                           AppAssets.profileCheck,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.check_rounded,
-                            color: AppColors.primary,
-                            size: 16,
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.check_rounded,
+                                color: AppColors.primary,
+                                size: 16,
+                              ),
                         ),
                       ),
                     ),
@@ -118,7 +122,7 @@ class ProfileView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // 2. Name and Phone
               Center(
                 child: Column(
@@ -144,7 +148,7 @@ class ProfileView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
-              
+
               // 3. Menu list enclosed in a light gray rounded card container
               Container(
                 decoration: BoxDecoration(
@@ -164,7 +168,7 @@ class ProfileView extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // My Plans (Dark Navy Blue special banner item)
                     InkWell(
                       onTap: () {
@@ -172,7 +176,10 @@ class ProfileView extends StatelessWidget {
                       },
                       borderRadius: BorderRadius.circular(24),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 18,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(24),
@@ -199,15 +206,16 @@ class ProfileView extends StatelessWidget {
                                 AppAssets.navPlansActive,
                                 color: Colors.white,
                                 fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.assignment_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.assignment_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
                               ),
                             ),
                             const SizedBox(width: 14),
-                            
+
                             // Details
                             Expanded(
                               child: Column(
@@ -234,7 +242,7 @@ class ProfileView extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            
+
                             // White chevron icon
                             const Icon(
                               Icons.chevron_right_rounded,
@@ -246,7 +254,7 @@ class ProfileView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Recover Account
                     _buildMenuItem(
                       iconPath: AppAssets.recoverAccount,
@@ -255,7 +263,7 @@ class ProfileView extends StatelessWidget {
                       onTap: () => context.push('/recover-account'),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Help & Support (Tapping this opens settings page per mockup rules)
                     _buildMenuItem(
                       iconPath: AppAssets.helpAndSupport,
@@ -264,7 +272,7 @@ class ProfileView extends StatelessWidget {
                       onTap: () => context.push('/profile-settings'),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Logout (Styled in Red)
                     _buildLogoutItem(context),
                   ],
@@ -307,15 +315,12 @@ class ProfileView extends StatelessWidget {
               child: Image.asset(
                 iconPath,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  fallbackIcon,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(fallbackIcon, color: AppColors.primary, size: 20),
               ),
             ),
             const SizedBox(width: 14),
-            
+
             // Text Label
             Expanded(
               child: Text(
@@ -327,7 +332,7 @@ class ProfileView extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Slate Gray trailing arrow
             const Icon(
               Icons.chevron_right_rounded,
@@ -341,28 +346,48 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _buildLogoutItem(BuildContext context) {
+    final controller = Get.find<ProfileSettingsController>();
     return InkWell(
       onTap: () {
         // Pop dialog or route to register
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Logout'),
-            content: const Text('Are you sure you want to logout?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  context.go('/register');
-                },
-                child: const Text('Logout', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
+          barrierDismissible: false,
+          builder: (dialogContext) => Obx(() {
+            final isLoading = controller.isLoading.value;
+            return AlertDialog(
+              title: const Text('Logout'),
+              content: const Text('Are you sure you want to logout?'),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => controller.logout(dialogContext),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.red,
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                ),
+              ],
+            );
+          }),
         );
       },
       borderRadius: BorderRadius.circular(20),
@@ -394,7 +419,7 @@ class ProfileView extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            
+
             // Text Label in red
             const Expanded(
               child: Text(

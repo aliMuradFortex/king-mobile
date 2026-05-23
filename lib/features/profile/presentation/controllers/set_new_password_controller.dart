@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/widgets/custom_snackbar.dart';
 
 class SetNewPasswordController extends GetxController {
   final passwordController = TextEditingController();
@@ -63,34 +64,31 @@ class SetNewPasswordController extends GetxController {
     final confirmPassword = confirmPasswordController.text;
 
     if (password.isEmpty || confirmPassword.isEmpty) {
-      Get.snackbar(
-        'Required Fields',
-        'Please fill in both password fields.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
+      CustomSnackBar.show(
+        context,
+        title: 'Required Fields',
+        message: 'Please fill in both password fields.',
+        isError: true,
       );
       return;
     }
 
     if (password != confirmPassword) {
-      Get.snackbar(
-        'Mismatch',
-        'Passwords do not match.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
+      CustomSnackBar.show(
+        context,
+        title: 'Mismatch',
+        message: 'Passwords do not match.',
+        isError: true,
       );
       return;
     }
 
     if (!hasMinLength.value || !hasNumber.value || !hasSpecialChar.value) {
-      Get.snackbar(
-        'Weak Password',
-        'Password does not meet all security checklist items.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
+      CustomSnackBar.show(
+        context,
+        title: 'Weak Password',
+        message: 'Password does not meet all security checklist items.',
+        isError: true,
       );
       return;
     }

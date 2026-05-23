@@ -86,50 +86,64 @@ class MyPlansView extends StatelessWidget {
             
             // 2. Scrollable Cards List
             Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                children: [
-                  // Active Plan 1
-                  _buildPlanCard(
-                    context,
-                    modelName: 'Samsung Galaxy S24 Ultra',
-                    planDuration: '6 Months Plan',
-                    isActive: true,
-                    paid: '08/12',
-                    remaining: '04 Installments',
-                    monthly: 'Rs. 12,800',
-                    downpayment: 'Rs. 112,800',
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Active Plan 2
-                  _buildPlanCard(
-                    context,
-                    modelName: 'Samsung Galaxy S24 Ultra',
-                    planDuration: '6 Months Plan',
-                    isActive: true,
-                    paid: '08/12',
-                    remaining: '04 Installments',
-                    monthly: 'Rs. 12,800',
-                    downpayment: 'Rs. 112,800',
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Completed Plan 3
-                  _buildPlanCard(
-                    context,
-                    modelName: 'Samsung Galaxy S24 Ultra',
-                    planDuration: '6 Months Plan',
-                    isActive: false,
-                    paid: '06/06',
-                    remaining: '00 Installments',
-                    monthly: 'Rs. 12,800',
-                    downpayment: 'Rs. 112,800',
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+              child: Obx(() {
+                final homeController = Get.find<HomeController>();
+                final plans = homeController.myInstallmentPlans;
+
+                if (plans.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text(
+                        'No installment plans yet.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                  itemCount: plans.length,
+                  itemBuilder: (context, index) {
+                    final plan = plans[index];
+                    final product = plan['product'] as Map<String, dynamic>?;
+                    
+                    final List<dynamic> images = product?['images'] ?? [];
+                    String imagePath = '';
+                    if (product?['featured_image'] != null) {
+                      imagePath = product!['featured_image'];
+                    } else if (images.isNotEmpty) {
+                      final first = images.first;
+                      if (first is Map) {
+                        imagePath = first['image_path'] ?? '';
+                      } else {
+                        imagePath = first.toString();
+                      }
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: _buildPlanCard(
+                        context,
+                        modelName: plan['modelName'] ?? '',
+                        planDuration: plan['planDuration'] ?? '',
+                        isActive: plan['isActive'] ?? false,
+                        paid: plan['paid'] ?? '',
+                        remaining: plan['remaining'] ?? '',
+                        monthly: plan['monthly'] ?? '',
+                        downpayment: plan['downpayment'] ?? '',
+                        imagePath: imagePath,
+                      ),
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -146,6 +160,7 @@ class MyPlansView extends StatelessWidget {
     required String remaining,
     required String monthly,
     required String downpayment,
+    required String imagePath,
   }) {
     return InkWell(
       onTap: () {
@@ -194,15 +209,25 @@ class MyPlansView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    AppAssets.featuredHandset,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.phone_iphone_rounded,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
+                  child: imagePath.startsWith('http')
+                      ? Image.network(
+                          imagePath,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.phone_iphone_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        )
+                      : Image.asset(
+                          imagePath.isNotEmpty ? imagePath : AppAssets.featuredHandset,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.phone_iphone_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 14),
                 

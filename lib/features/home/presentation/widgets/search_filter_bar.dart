@@ -32,39 +32,58 @@ class SearchFilterBar extends StatelessWidget {
                   ),
                 ],
               ),
-              child: TextField(
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-                decoration: InputDecoration(
-                  hintText: AppStrings.searchHint,
-                  hintStyle: TextStyle(
-                    color: Colors.grey.shade400,
+              child: Obx(() {
+                return TextField(
+                  controller: controller.searchController,
+                  style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
                   ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Image.asset(
-                      AppAssets.search,
-                      width: 18,
-                      height: 18,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.search_rounded, color: AppColors.primary, size: 20);
-                      },
+                  decoration: InputDecoration(
+                    hintText: AppStrings.searchHint,
+                    hintStyle: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Image.asset(
+                        AppAssets.search,
+                        width: 18,
+                        height: 18,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.search_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          );
+                        },
+                      ),
+                    ),
+                    suffixIcon: controller.searchQuery.value.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.clear_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              controller.searchController.clear();
+                            },
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
+                );
+              }),
             ),
           ),
           const SizedBox(width: 12),
-          
+
           // 2. Filter Action Button Card
           GestureDetector(
             onTap: () => controller.openFilters(context),
@@ -90,7 +109,11 @@ class SearchFilterBar extends StatelessWidget {
                   height: 22,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    return const Icon(Icons.tune_rounded, color: AppColors.primary, size: 22);
+                    return const Icon(
+                      Icons.tune_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    );
                   },
                 ),
               ),

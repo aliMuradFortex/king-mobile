@@ -37,10 +37,10 @@ class FilterBottomSheet extends StatelessWidget {
               Text(
                 AppStrings.filtersTitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
@@ -50,14 +50,18 @@ class FilterBottomSheet extends StatelessWidget {
                   height: 24,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.cancel_rounded, color: Colors.grey.shade400, size: 24);
+                    return Icon(
+                      Icons.cancel_rounded,
+                      color: Colors.grey.shade400,
+                      size: 24,
+                    );
                   },
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          
+
           // Scrollable filter contents to prevent overflow on smaller devices
           Flexible(
             child: SingleChildScrollView(
@@ -69,37 +73,44 @@ class FilterBottomSheet extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildPriceRangeCard(controller),
                   const SizedBox(height: 24),
-                  
+
                   // 3. Installment Plan Selector
                   Row(
                     children: [
-                      _buildSectionTitle(context, AppStrings.filterInstallmentPlan),
+                      _buildSectionTitle(
+                        context,
+                        AppStrings.filterInstallmentPlan,
+                      ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.verified_rounded, color: Color(0xFFD4AF37), size: 18), // Gold verification badge
+                      const Icon(
+                        Icons.verified_rounded,
+                        color: Color(0xFFD4AF37),
+                        size: 18,
+                      ), // Gold verification badge
                     ],
                   ),
                   const SizedBox(height: 12),
                   _buildInstallmentSelector(controller),
                   const SizedBox(height: 24),
-                  
+
                   // 4. RAM Option Selector
                   _buildSectionTitle(context, AppStrings.filterRam),
                   const SizedBox(height: 12),
                   _buildRamSelector(controller),
                   const SizedBox(height: 24),
-                  
+
                   // 5. Storage Option Selector
                   _buildSectionTitle(context, AppStrings.filterStorage),
                   const SizedBox(height: 12),
                   _buildStorageSelector(controller),
                   const SizedBox(height: 24),
-                  
+
                   // 6. Back Camera Option Selector
                   _buildSectionTitle(context, AppStrings.filterBackCamera),
                   const SizedBox(height: 12),
                   _buildCameraSelector(controller, isBackCamera: true),
                   const SizedBox(height: 24),
-                  
+
                   // 7. Front Camera Option Selector
                   _buildSectionTitle(context, AppStrings.filterFrontCamera),
                   const SizedBox(height: 12),
@@ -109,7 +120,7 @@ class FilterBottomSheet extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // 8. Bottom Action Buttons (Reset and Apply)
           Row(
             children: [
@@ -117,7 +128,11 @@ class FilterBottomSheet extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: ElevatedButton(
-                  onPressed: controller.resetDraftFilters,
+                  onPressed: () {
+                    controller.resetDraftFilters();
+                    controller.commitFilters();
+                    Navigator.of(context).pop();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF1F3F6),
                     foregroundColor: AppColors.primary,
@@ -129,21 +144,19 @@ class FilterBottomSheet extends StatelessWidget {
                   ),
                   child: const Text(
                     AppStrings.filterReset,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Apply Filters Button
               Expanded(
                 flex: 7,
                 child: ElevatedButton(
                   onPressed: () {
                     controller.commitFilters();
+                    controller.isFilterApplied.value = true;
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
@@ -157,10 +170,7 @@ class FilterBottomSheet extends StatelessWidget {
                   ),
                   child: const Text(
                     AppStrings.filterApply,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -175,10 +185,10 @@ class FilterBottomSheet extends StatelessWidget {
     return Text(
       title,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
-          ),
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: AppColors.primary,
+      ),
     );
   }
 
@@ -286,12 +296,17 @@ class FilterBottomSheet extends StatelessWidget {
               onTap: () => controller.tempInstallmentPlan.value = plan,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.secondary : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? AppColors.secondaryDark : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppColors.secondaryDark
+                        : Colors.grey.shade300,
                     width: 1,
                   ),
                 ),
@@ -300,7 +315,9 @@ class FilterBottomSheet extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: isSelected ? const Color(0xFF6B5115) : AppColors.primary,
+                    color: isSelected
+                        ? const Color(0xFF6B5115)
+                        : AppColors.primary,
                   ),
                 ),
               ),
@@ -330,7 +347,9 @@ class FilterBottomSheet extends StatelessWidget {
                   color: isSelected ? AppColors.primary : Colors.white,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.grey.shade300,
                     width: 1,
                   ),
                 ),
@@ -372,7 +391,9 @@ class FilterBottomSheet extends StatelessWidget {
                   color: isSelected ? AppColors.primary : Colors.white,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.grey.shade300,
                     width: 1,
                   ),
                 ),
@@ -394,7 +415,9 @@ class FilterBottomSheet extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white70 : Colors.grey.shade500,
+                          color: isSelected
+                              ? Colors.white70
+                              : Colors.grey.shade500,
                           height: 1.1,
                         ),
                       ),
@@ -410,10 +433,15 @@ class FilterBottomSheet extends StatelessWidget {
   }
 
   // Camera Circular Selector
-  Widget _buildCameraSelector(HomeController controller, {required bool isBackCamera}) {
+  Widget _buildCameraSelector(
+    HomeController controller, {
+    required bool isBackCamera,
+  }) {
     final options = ['8MP', '12MP', '16MP', '32MP'];
     return Obx(() {
-      final selected = isBackCamera ? controller.tempBackCamera.value : controller.tempFrontCamera.value;
+      final selected = isBackCamera
+          ? controller.tempBackCamera.value
+          : controller.tempFrontCamera.value;
       return Row(
         children: options.map((option) {
           final isSelected = selected == option;
@@ -434,7 +462,9 @@ class FilterBottomSheet extends StatelessWidget {
                   color: isSelected ? AppColors.primary : Colors.white,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.grey.shade300,
                     width: 1,
                   ),
                 ),

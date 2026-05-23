@@ -6,16 +6,21 @@ import '../controllers/forgot_password_verify_controller.dart';
 
 class ForgotPasswordVerifyView extends StatelessWidget {
   final String flow;
+  final String? phone;
 
   const ForgotPasswordVerifyView({
     super.key,
     required this.flow,
+    this.phone,
   });
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ForgotPasswordVerifyController());
     controller.flow.value = flow;
+    if (phone != null) {
+      controller.phone.value = phone!;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -91,19 +96,19 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    Obx(() => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        'Enter the 6-digit code sent to +92 3XX XXXXXXX',
+                        'Enter the 6-digit code sent to ${controller.phone.value.isNotEmpty ? controller.phone.value : "+92 3XX XXXXXXX"}',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFF0F3A5F), // Slate/Navy color matching mockup
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           height: 1.4,
                         ),
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 36),
                     
                     // 3. OTP 6-Circle Fields Row
@@ -152,8 +157,8 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       height: 56,
-                      child: ElevatedButton(
-                        onPressed: () => controller.verifyCode(context),
+                      child: Obx(() => ElevatedButton(
+                        onPressed: controller.isLoading.value ? null : () => controller.verifyCode(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
@@ -161,15 +166,24 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                           ),
                           elevation: 2,
                         ),
-                        child: const Text(
-                          'Verify',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                        child: controller.isLoading.value
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Verify',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      )),
                     ),
                     const SizedBox(height: 28),
                     
@@ -203,7 +217,7 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                       final seconds = controller.timerSeconds.value;
                       return Center(
                         child: TextButton(
-                          onPressed: seconds > 0 ? null : controller.resendOtp,
+                          onPressed: seconds > 0 ? null : () => controller.resendOtp(context),
                           child: Text(
                             'Resend OTP',
                             style: TextStyle(

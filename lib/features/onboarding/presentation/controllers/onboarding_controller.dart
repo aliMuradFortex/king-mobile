@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/secure_storage_service.dart';
 
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
@@ -27,7 +28,8 @@ class OnboardingController extends GetxController {
     }
   }
 
-  void skip() {
-    AppRouter.router.go('/register');
+  void skip() async {
+    await SecureStorageService.instance.write('onboarding_seen', 'true');
+    AppRouter.router.go('/login');
   }
 }

@@ -47,14 +47,21 @@ class HomeView extends StatelessWidget {
           // Render Home Dashboard screen
           return RefreshIndicator(
             onRefresh: () async {
-              // Action on pull-to-refresh (e.g., reloading handsets)
+              await controller.fetchProducts();
             },
             color: AppColors.primary,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: const [
+            child: controller.isProductsLoading.value && controller.products.isEmpty
+                ? const SizedBox(
+                    height: 400,
+                    child: Center(
+                      child: CircularProgressIndicator(color: AppColors.primary),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: const [
                   SizedBox(height: 12),
                   // 1. Top Greeting Header
                   HomeHeader(),

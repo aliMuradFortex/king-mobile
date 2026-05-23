@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../core/network/api_service.dart';
+import '../../../../core/network/dio_api_service.dart';
 
 class ApplicationProcessController extends GetxController {
   // Wizard active step (1 or 2)
@@ -8,22 +11,35 @@ class ApplicationProcessController extends GetxController {
 
   // Form Fields Controllers
   final nameController = TextEditingController();
+  final fatherNameController = TextEditingController();
   final phoneController = TextEditingController();
   final cnicController = TextEditingController();
   final addressController = TextEditingController();
   final cityController = TextEditingController();
   final postalCodeController = TextEditingController();
 
-  // Mock Upload Paths
+  // Local Image Display Paths (URLs once uploaded)
   final RxString frontCnicPath = ''.obs;
   final RxString backCnicPath = ''.obs;
 
-  // Validation observables for inline error feedback if needed
-  final RxBool hasValidationError = false.obs;
+  // Server Relative Paths for Order API
+  final RxString frontCnicRelativePath = ''.obs;
+  final RxString backCnicRelativePath = ''.obs;
+
+  // Uploading status
+  final RxBool isUploadingFront = false.obs;
+  final RxBool isUploadingBack = false.obs;
+
+  // Submitting Order status
+  final RxBool isSubmittingOrder = false.obs;
+
+  final ImagePicker _picker = ImagePicker();
+  final ApiService _apiService = DioApiService();
 
   @override
   void onClose() {
     nameController.dispose();
+    fatherNameController.dispose();
     phoneController.dispose();
     cnicController.dispose();
     addressController.dispose();
@@ -32,26 +48,104 @@ class ApplicationProcessController extends GetxController {
     super.onClose();
   }
 
-  // Pick/Capture Front CNIC
-  void pickCnicFront() {
-    // Mimic taking/uploading photo
-    frontCnicPath.value = 'CNIC_Front_Captured.jpg';
+  // Pick & Upload Front CNIC
+  Future<void> pickCnicFront(BuildContext context) async {
+    try {
+      final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
+      if (file != null) {
+        frontCnicPath.value = file.name;
+        isUploadingFront.value = true;
+
+        final response = await _apiService.uploadMultipleFiles([file.path], 'cnic_images');
+        isUploadingFront.value = false;
+
+        final success = response['success'] as bool? ?? false;
+        if (success && response['data'] != null && response['data']['files'] != null) {
+          final files = response['data']['files'] as List<dynamic>;
+          if (files.isNotEmpty) {
+            frontCnicRelativePath.value = files.first['path'] ?? '';
+            frontCnicPath.value = files.first['url'] ?? file.name;
+          }
+        } else {
+          frontCnicPath.value = '';
+          frontCnicRelativePath.value = '';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] as String? ?? 'Failed to upload CNIC front.'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      isUploadingFront.value = false;
+      frontCnicPath.value = '';
+      frontCnicRelativePath.value = '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error picking/uploading CNIC front: $e'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
-  // Pick/Capture Back CNIC
-  void pickCnicBack() {
-    // Mimic taking/uploading photo
-    backCnicPath.value = 'CNIC_Back_Captured.jpg';
+  // Pick & Upload Back CNIC
+  Future<void> pickCnicBack(BuildContext context) async {
+    try {
+      final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
+      if (file != null) {
+        backCnicPath.value = file.name;
+        isUploadingBack.value = true;
+
+        final response = await _apiService.uploadMultipleFiles([file.path], 'cnic_images');
+        isUploadingBack.value = false;
+
+        final success = response['success'] as bool? ?? false;
+        if (success && response['data'] != null && response['data']['files'] != null) {
+          final files = response['data']['files'] as List<dynamic>;
+          if (files.isNotEmpty) {
+            backCnicRelativePath.value = files.first['path'] ?? '';
+            backCnicPath.value = files.first['url'] ?? file.name;
+          }
+        } else {
+          backCnicPath.value = '';
+          backCnicRelativePath.value = '';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] as String? ?? 'Failed to upload CNIC back.'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      isUploadingBack.value = false;
+      backCnicPath.value = '';
+      backCnicRelativePath.value = '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error picking/uploading CNIC back: $e'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   // Reset CNIC Front
   void resetCnicFront() {
     frontCnicPath.value = '';
+    frontCnicRelativePath.value = '';
   }
 
   // Reset CNIC Back
   void resetCnicBack() {
     backCnicPath.value = '';
+    backCnicRelativePath.value = '';
   }
 
   // Handle Transition / Continue action
@@ -59,11 +153,12 @@ class ApplicationProcessController extends GetxController {
     BuildContext context, {
     required Map<String, dynamic> product,
     required String plan,
-    required Map<String, String> branch,
+    required Map<String, dynamic> branch,
   }) {
     if (activeStep.value == 1) {
       // Validate Step 1
       if (nameController.text.trim().isEmpty ||
+          fatherNameController.text.trim().isEmpty ||
           phoneController.text.trim().isEmpty ||
           cnicController.text.trim().isEmpty ||
           addressController.text.trim().isEmpty ||
@@ -96,8 +191,8 @@ class ApplicationProcessController extends GetxController {
       // Move to Step 2
       activeStep.value = 2;
     } else if (activeStep.value == 2) {
-      // Validate Step 2
-      if (frontCnicPath.isEmpty || backCnicPath.isEmpty) {
+      // Validate Step 2 - check relative server paths are populated
+      if (frontCnicRelativePath.isEmpty || backCnicRelativePath.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please upload both Front and Back sides of your CNIC.'),
@@ -108,7 +203,7 @@ class ApplicationProcessController extends GetxController {
         return;
       }
 
-      // Route to Review Order Screen instead of showing dialog
+      // Route to Review Order Screen
       context.push(
         '/review-order',
         extra: {
@@ -117,6 +212,7 @@ class ApplicationProcessController extends GetxController {
           'branch': branch,
           'personalDetails': {
             'name': nameController.text.trim(),
+            'father_name': fatherNameController.text.trim(),
             'phone': phoneController.text.trim(),
             'cnic': cnicController.text.trim(),
             'address': addressController.text.trim(),
@@ -125,6 +221,8 @@ class ApplicationProcessController extends GetxController {
           },
           'frontCnic': frontCnicPath.value,
           'backCnic': backCnicPath.value,
+          'frontCnicRelative': frontCnicRelativePath.value,
+          'backCnicRelative': backCnicRelativePath.value,
         },
       );
     }
@@ -139,23 +237,77 @@ class ApplicationProcessController extends GetxController {
     }
   }
 
-  // Final Order Submission Routing
-  void submitOrder(
+  // Final Order Submission Routing via API
+  Future<void> submitOrder(
     BuildContext context, {
     required Map<String, dynamic> product,
     required String plan,
-    required Map<String, String> branch,
-  }) {
-    // Generate a mock transaction ID (e.g. #KM-98231)
-    final int randomNum = 10000 + (DateTime.now().microsecondsSinceEpoch % 90000);
-    final String transactionId = '#KM-$randomNum';
+    required Map<String, dynamic> branch,
+    required Map<String, String> personalDetails,
+    required String frontCnicRelative,
+    required String backCnicRelative,
+  }) async {
+    try {
+      isSubmittingOrder.value = true;
 
-    // Route to Order Submitted Screen
-    context.push(
-      '/order-submitted',
-      extra: {
-        'transactionId': transactionId,
-      },
-    );
+      int variationId = 1;
+      if (product['variations'] != null && (product['variations'] as List).isNotEmpty) {
+        final v = product['variations'].first;
+        if (v is Map && v['id'] != null) {
+          variationId = v['id'] is int ? v['id'] : int.tryParse(v['id'].toString()) ?? 1;
+        }
+      }
+
+      final int productId = product['id'] is int ? product['id'] : int.tryParse(product['id'].toString()) ?? 1;
+      final int branchId = branch['id'] is int ? branch['id'] : int.tryParse(branch['id'].toString()) ?? 1;
+
+      final cleanCnic = personalDetails['cnic']?.replaceAll(RegExp(r'\D'), '') ?? '';
+      
+      final Map<String, dynamic> orderData = {
+        'website_product_id': productId,
+        'website_product_variation_id': variationId,
+        'branch_id': branchId,
+        'name': personalDetails['name'] ?? '',
+        'father_name': personalDetails['father_name'] ?? '',
+        'phone_no_1': '0${personalDetails['phone']}', // Ensure Pakistan format with leading 0
+        'cnic_number': cleanCnic,
+        'address': "${personalDetails['address']}, ${personalDetails['city']}, ${personalDetails['postalCode']}, Pakistan",
+        'cnic_front_path': frontCnicRelative,
+        'cnic_back_path': backCnicRelative,
+      };
+
+      final response = await _apiService.createOrder(orderData);
+      isSubmittingOrder.value = false;
+
+      final success = response['success'] as bool? ?? false;
+      if (success && response['data'] != null) {
+        final orderDetails = response['data'] as Map<String, dynamic>;
+        final orderNumber = orderDetails['order_number']?.toString() ?? '#ORD-000000';
+
+        context.push(
+          '/order-submitted',
+          extra: {
+            'transactionId': orderNumber,
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] as String? ?? 'Failed to place order.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      isSubmittingOrder.value = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error submitting order: $e'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

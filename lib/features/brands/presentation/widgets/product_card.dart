@@ -12,13 +12,33 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String brand = product['brand'] ?? '';
-    final String model = product['model'] ?? '';
-    final String priceFormatted = product['priceFormatted'] ?? '';
-    final String instalmentPrice = product['instalmentPrice'] ?? '';
-    final String? tag = product['tag'];
+    final String brandName = product['brand'] is Map
+        ? (product['brand']['name'] ?? '')
+        : (product['brand'] ?? '');
+    final String modelName = product['model'] ?? product['name'] ?? '';
+    
+    final double minPrice = double.tryParse(product['min_price'] ?? '') ?? 0.0;
+    final String priceFormatted = product['priceFormatted'] ??
+        (minPrice > 0 ? 'Rs. ${minPrice.toStringAsFixed(0)}' : '');
+
+    final double minInstallment = double.tryParse(product['min_installment'] ?? '') ?? 0.0;
+    final String instalmentPrice = product['instalmentPrice'] ??
+        (minInstallment > 0 ? 'Rs. ${minInstallment.toStringAsFixed(0)}/mo' : '');
+
+    final String? tag = product['tag'] ?? (product['is_featured'] == true ? 'HOT DEAL' : null);
     final List<dynamic> images = product['images'] ?? [];
-    final String mainImage = images.isNotEmpty ? images.first : '';
+    
+    String mainImage = '';
+    if (product['featured_image'] != null) {
+      mainImage = product['featured_image'];
+    } else if (images.isNotEmpty) {
+      final first = images.first;
+      if (first is Map) {
+        mainImage = first['image_path'] ?? '';
+      } else {
+        mainImage = first.toString();
+      }
+    }
 
     return GestureDetector(
       onTap: () {
@@ -45,26 +65,38 @@ class ProductCard extends StatelessWidget {
                 Container(
                   height: 140,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: const BorderRadius.vertical(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.vertical(
                       top: Radius.circular(20),
                     ),
                   ),
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Image.asset(
-                        mainImage,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.phone_iphone_rounded,
-                            size: 56,
-                            color: AppColors.textMuted,
-                          );
-                        },
-                      ),
+                      child: mainImage.startsWith('http')
+                          ? Image.network(
+                              mainImage,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.phone_iphone_rounded,
+                                  size: 56,
+                                  color: AppColors.textMuted,
+                                );
+                              },
+                            )
+                          : Image.asset(
+                              mainImage.isNotEmpty ? mainImage : 'assets/images/featured_handset.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.phone_iphone_rounded,
+                                  size: 56,
+                                  color: AppColors.textMuted,
+                                );
+                              },
+                            ),
                     ),
                   ),
                 ),
@@ -108,7 +140,7 @@ class ProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    brand.toUpperCase(),
+                    brandName.toUpperCase(),
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -118,7 +150,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    model,
+                    modelName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

@@ -9,10 +9,12 @@ import '../controllers/application_process_controller.dart';
 class ReviewOrderView extends StatelessWidget {
   final Map<String, dynamic> product;
   final String plan;
-  final Map<String, String> branch;
+  final Map<String, dynamic> branch;
   final Map<String, String> personalDetails;
   final String frontCnic;
   final String backCnic;
+  final String frontCnicRelative;
+  final String backCnicRelative;
 
   const ReviewOrderView({
     super.key,
@@ -22,6 +24,8 @@ class ReviewOrderView extends StatelessWidget {
     required this.personalDetails,
     required this.frontCnic,
     required this.backCnic,
+    required this.frontCnicRelative,
+    required this.backCnicRelative,
   });
 
   @override
@@ -29,7 +33,7 @@ class ReviewOrderView extends StatelessWidget {
     // Find the active ApplicationProcessController
     final controller = Get.find<ApplicationProcessController>();
 
-    final String modelName = product['model'] ?? '';
+    final String modelName = product['model'] ?? product['name'] ?? '';
     final String branchName = branch['name'] ?? 'King Mobile';
     final String branchAddress = branch['address'] ?? '';
 
@@ -40,7 +44,12 @@ class ReviewOrderView extends StatelessWidget {
     if (match != null) {
       months = int.tryParse(match.group(0) ?? '') ?? 6;
     }
-    final double price = product['price'] as double? ?? 385000.0;
+    
+    final double price = (product['price'] is num)
+        ? (product['price'] as num).toDouble()
+        : double.tryParse(product['price']?.toString() ?? '') ??
+            double.tryParse(product['min_price']?.toString() ?? '') ??
+            385000.0;
     // Assume 10% down payment, remaining 90% is financed
     final double monthlyAmount = (price * 0.9) / months;
     
@@ -147,6 +156,7 @@ class ReviewOrderView extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildPersonalDetailsCard(
                     name: personalDetails['name'] ?? '',
+                    fatherName: personalDetails['father_name'] ?? '',
                     cnic: maskedCnic,
                     address: fullAddress,
                   ),
@@ -199,40 +209,59 @@ class ReviewOrderView extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: () => controller.submitOrder(
-                    context,
-                    product: product,
-                    plan: plan,
-                    branch: branch,
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                child: Obx(() {
+                  final isSubmitting = controller.isSubmittingOrder.value;
+                  return ElevatedButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () => controller.submitOrder(
+                              context,
+                              product: product,
+                              plan: plan,
+                              branch: branch,
+                              personalDetails: personalDetails,
+                              frontCnicRelative: frontCnicRelative,
+                              backCnicRelative: backCnicRelative,
+                            ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
                     ),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        AppStrings.submitOrderButton,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ),
+                    child: isSubmitting
+                        ? const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                AppStrings.submitOrderButton,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ],
+                          ),
+                  );
+                }),
               ),
             ),
           ),
@@ -249,7 +278,21 @@ class ReviewOrderView extends StatelessWidget {
     required String monthlyFormatted,
   }) {
     // Get product image
-    final String imagePath = (product['images'] as List?)?.first ?? AppAssets.iphone15;
+    final List<dynamic> images = product['images'] ?? [];
+    String imagePath = '';
+    if (product['featured_image'] != null) {
+      imagePath = product['featured_image'];
+    } else if (images.isNotEmpty) {
+      final first = images.first;
+      if (first is Map) {
+        imagePath = first['image_path'] ?? '';
+      } else {
+        imagePath = first.toString();
+      }
+    }
+    if (imagePath.isEmpty) {
+      imagePath = AppAssets.iphone15;
+    }
 
     return Container(
       width: double.infinity,
@@ -270,13 +313,21 @@ class ReviewOrderView extends StatelessWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.phone_iphone_rounded, color: Colors.white, size: 36);
-                },
-              ),
+              child: imagePath.startsWith('http')
+                  ? Image.network(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.phone_iphone_rounded, color: Colors.white, size: 36);
+                      },
+                    )
+                  : Image.asset(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.phone_iphone_rounded, color: Colors.white, size: 36);
+                      },
+                    ),
             ),
           ),
           const SizedBox(width: 16),
@@ -497,6 +548,7 @@ class ReviewOrderView extends StatelessWidget {
   // Personal details summary container
   Widget _buildPersonalDetailsCard({
     required String name,
+    required String fatherName,
     required String cnic,
     required String address,
   }) {
@@ -512,6 +564,8 @@ class ReviewOrderView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDetailRow(AppStrings.fullNameHeader, name),
+          const SizedBox(height: 16),
+          _buildDetailRow("FATHER'S NAME", fatherName),
           const SizedBox(height: 16),
           _buildDetailRow(AppStrings.cnicNumberHeader, cnic),
           const SizedBox(height: 16),

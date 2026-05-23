@@ -36,11 +36,13 @@ class VerifyIdentityStep extends StatelessWidget {
           // 2. Front CNIC Upload Card
           Obx(() {
             final isUploaded = controller.frontCnicPath.isNotEmpty;
+            final isUploading = controller.isUploadingFront.value;
             return _buildUploadCard(
               title: AppStrings.cnicFrontSide,
               isUploaded: isUploaded,
+              isUploading: isUploading,
               fileName: controller.frontCnicPath.value,
-              onTap: controller.pickCnicFront,
+              onTap: () => controller.pickCnicFront(context),
               onClear: controller.resetCnicFront,
             );
           }),
@@ -49,11 +51,13 @@ class VerifyIdentityStep extends StatelessWidget {
           // 3. Back CNIC Upload Card
           Obx(() {
             final isUploaded = controller.backCnicPath.isNotEmpty;
+            final isUploading = controller.isUploadingBack.value;
             return _buildUploadCard(
               title: AppStrings.cnicBackSide,
               isUploaded: isUploaded,
+              isUploading: isUploading,
               fileName: controller.backCnicPath.value,
-              onTap: controller.pickCnicBack,
+              onTap: () => controller.pickCnicBack(context),
               onClear: controller.resetCnicBack,
             );
           }),
@@ -71,16 +75,21 @@ class VerifyIdentityStep extends StatelessWidget {
   Widget _buildUploadCard({
     required String title,
     required bool isUploaded,
+    required bool isUploading,
     required String fileName,
     required VoidCallback onTap,
     required VoidCallback onClear,
   }) {
     return InkWell(
-      onTap: onTap,
+      onTap: isUploading ? null : onTap,
       borderRadius: BorderRadius.circular(24),
       child: CustomPaint(
         painter: DashedBorderPainter(
-          color: isUploaded ? Colors.green : const Color(0xFFCBD5E1),
+          color: isUploading
+              ? AppColors.primary.withValues(alpha: 0.5)
+              : isUploaded
+                  ? Colors.green
+                  : const Color(0xFFCBD5E1),
           strokeWidth: isUploaded ? 2.0 : 1.5,
           borderRadius: 24,
         ),
@@ -88,41 +97,60 @@ class VerifyIdentityStep extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
           decoration: BoxDecoration(
-            color: isUploaded ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+            color: isUploading
+                ? const Color(0xFFF1F5F9)
+                : isUploaded
+                    ? const Color(0xFFF0FDF4)
+                    : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icon block (Camera or Checkmark)
+              // Icon block (Camera or Checkmark or Loader)
               Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: isUploaded ? Colors.green.shade100 : const Color(0xFFE2E8F0),
+                  color: isUploading
+                      ? Colors.blue.shade50
+                      : isUploaded
+                          ? Colors.green.shade100
+                          : const Color(0xFFE2E8F0),
                   shape: BoxShape.circle,
                 ),
-                child: isUploaded
-                    ? const Icon(
-                        Icons.check_circle_rounded,
-                        color: Colors.green,
-                        size: 32,
-                      )
-                    : Center(
-                        child: Image.asset(
-                          AppAssets.camera,
-                          width: 28,
-                          height: 28,
-                          color: AppColors.primary,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.add_a_photo_outlined,
-                              color: AppColors.primary,
-                              size: 28,
-                            );
-                          },
+                child: isUploading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                          ),
                         ),
-                      ),
+                      )
+                    : isUploaded
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.green,
+                            size: 32,
+                          )
+                        : Center(
+                            child: Image.asset(
+                              AppAssets.camera,
+                              width: 28,
+                              height: 28,
+                              color: AppColors.primary,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.add_a_photo_outlined,
+                                  color: AppColors.primary,
+                                  size: 28,
+                                );
+                              },
+                            ),
+                          ),
               ),
               const SizedBox(height: 16),
 

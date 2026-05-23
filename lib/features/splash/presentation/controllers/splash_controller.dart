@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/secure_storage_service.dart';
 
 class SplashController extends GetxController {
   // Reactive animation states
@@ -45,18 +46,30 @@ class SplashController extends GetxController {
     Timer.periodic(stepDuration, (timer) {
       if (progress.value >= 1.0) {
         timer.cancel();
-        _navigateToOnboarding();
+        _determineNextScreen();
       } else {
         progress.value += 0.01;
       }
     });
   }
 
-  void _navigateToOnboarding() async {
+  void _determineNextScreen() async {
     // Hold at 100% progress briefly for smoothness
     await Future.delayed(const Duration(milliseconds: 400));
     
-    // Use GoRouter to navigate to the onboarding route
-    AppRouter.router.go('/onboarding');
+    final storage = SecureStorageService.instance;
+    final String? onboardingSeen = await storage.read('onboarding_seen');
+    
+    if (onboardingSeen != 'true') {
+      AppRouter.router.go('/onboarding');
+      return;
+    }
+
+    final String? token = await storage.getToken();
+    if (token != null && token.isNotEmpty) {
+      AppRouter.router.go('/home');
+    } else {
+      AppRouter.router.go('/login');
+    }
   }
 }

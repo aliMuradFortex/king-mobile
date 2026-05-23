@@ -95,7 +95,7 @@ class VerificationCompletedView extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     if (flow == 'registration') {
-                      context.go('/home');
+                      context.go('/login');
                     } else {
                       context.push('/set-new-password');
                     }

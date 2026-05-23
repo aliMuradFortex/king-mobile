@@ -16,6 +16,8 @@ import '../../features/profile/presentation/views/forgot_password_verify_view.da
 import '../../features/profile/presentation/views/verification_completed_view.dart';
 import '../../features/profile/presentation/views/set_new_password_view.dart';
 import '../../features/profile/presentation/views/notifications_view.dart';
+import '../../features/auth/presentation/views/set_pin_view.dart';
+import '../../features/auth/presentation/views/login_view.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -67,7 +69,7 @@ class AppRouter {
           final extra = state.extra as Map<String, dynamic>;
           final product = extra['product'] as Map<String, dynamic>;
           final plan = extra['plan'] as String;
-          final branch = extra['branch'] as Map<String, String>;
+          final branch = extra['branch'] as Map<String, dynamic>;
           return ApplicationProcessView(
             product: product,
             plan: plan,
@@ -81,10 +83,12 @@ class AppRouter {
           final extra = state.extra as Map<String, dynamic>;
           final product = extra['product'] as Map<String, dynamic>;
           final plan = extra['plan'] as String;
-          final branch = extra['branch'] as Map<String, String>;
+          final branch = extra['branch'] as Map<String, dynamic>;
           final personalDetails = extra['personalDetails'] as Map<String, String>;
           final frontCnic = extra['frontCnic'] as String;
           final backCnic = extra['backCnic'] as String;
+          final frontCnicRelative = extra['frontCnicRelative'] as String;
+          final backCnicRelative = extra['backCnicRelative'] as String;
           return ReviewOrderView(
             product: product,
             plan: plan,
@@ -92,6 +96,8 @@ class AppRouter {
             personalDetails: personalDetails,
             frontCnic: frontCnic,
             backCnic: backCnic,
+            frontCnicRelative: frontCnicRelative,
+            backCnicRelative: backCnicRelative,
           );
         },
       ),
@@ -141,7 +147,8 @@ class AppRouter {
         path: '/verify-phone',
         builder: (BuildContext context, GoRouterState state) {
           final flow = state.uri.queryParameters['flow'] ?? 'recovery';
-          return ForgotPasswordVerifyView(flow: flow);
+          final phone = state.uri.queryParameters['phone'];
+          return ForgotPasswordVerifyView(flow: flow, phone: phone);
         },
       ),
       GoRoute(
@@ -149,6 +156,18 @@ class AppRouter {
         builder: (BuildContext context, GoRouterState state) {
           final flow = state.uri.queryParameters['flow'] ?? 'recovery';
           return VerificationCompletedView(flow: flow);
+        },
+      ),
+      GoRoute(
+        path: '/set-pin',
+        builder: (BuildContext context, GoRouterState state) {
+          return const SetPinView();
+        },
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (BuildContext context, GoRouterState state) {
+          return const LoginView();
         },
       ),
       GoRoute(
