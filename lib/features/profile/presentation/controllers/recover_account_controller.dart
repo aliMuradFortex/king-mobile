@@ -26,7 +26,7 @@ class RecoverAccountController extends GetxController {
       colorText: Colors.white,
     );
 
-    context.push('/forgot-password-verify');
+    context.push('/verify-phone?flow=recovery');
   }
 
   @override

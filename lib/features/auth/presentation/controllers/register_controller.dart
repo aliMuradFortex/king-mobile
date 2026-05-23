@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/routing/app_router.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterController extends GetxController {
   final TextEditingController phoneController = TextEditingController();
@@ -16,7 +16,7 @@ class RegisterController extends GetxController {
     verificationMethod.value = method;
   }
 
-  void submit() {
+  void submit(BuildContext context) {
     final phone = phoneController.text.trim();
     if (phone.isEmpty) {
       Get.snackbar(
@@ -29,8 +29,7 @@ class RegisterController extends GetxController {
       return;
     }
     
-    // In a real application, this would trigger verification code dispatch.
-    // Here we navigate to the home route as a successful flow.
-    AppRouter.router.go('/home');
+    // Route to verification screen under the registration flow
+    context.push('/verify-phone?flow=registration');
   }
 }

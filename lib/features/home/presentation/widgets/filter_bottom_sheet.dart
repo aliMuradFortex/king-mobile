@@ -43,7 +43,7 @@ class FilterBottomSheet extends StatelessWidget {
                     ),
               ),
               GestureDetector(
-                onTap: () => Get.back(),
+                onTap: () => Navigator.of(context).pop(),
                 child: Image.asset(
                   AppAssets.cross,
                   width: 24,
@@ -144,7 +144,7 @@ class FilterBottomSheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     controller.commitFilters();
-                    Get.back();
+                    Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,

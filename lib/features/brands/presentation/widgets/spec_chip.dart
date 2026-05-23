@@ -16,7 +16,6 @@ class SpecChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 104,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),

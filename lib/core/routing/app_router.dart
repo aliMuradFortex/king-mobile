@@ -138,15 +138,17 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/forgot-password-verify',
+        path: '/verify-phone',
         builder: (BuildContext context, GoRouterState state) {
-          return const ForgotPasswordVerifyView();
+          final flow = state.uri.queryParameters['flow'] ?? 'recovery';
+          return ForgotPasswordVerifyView(flow: flow);
         },
       ),
       GoRoute(
         path: '/verification-complete',
         builder: (BuildContext context, GoRouterState state) {
-          return const VerificationCompletedView();
+          final flow = state.uri.queryParameters['flow'] ?? 'recovery';
+          return VerificationCompletedView(flow: flow);
         },
       ),
       GoRoute(

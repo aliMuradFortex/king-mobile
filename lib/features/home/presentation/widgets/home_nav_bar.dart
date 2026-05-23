@@ -11,8 +11,10 @@ class HomeNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<HomeController>();
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      height: 80,
+      height: 80 + bottomPadding,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(

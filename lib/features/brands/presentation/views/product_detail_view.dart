@@ -250,56 +250,45 @@ class ProductDetailView extends StatelessWidget {
                       const SizedBox(height: 12),
                       
                       // Horizontal scrollable list of key specification chips
-                      SizedBox(
-                        height: 96,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 1.05,
                           children: [
                             if (specs['ram'] != null)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: SpecChip(
-                                  iconPath: AppAssets.specRamIcon,
-                                  label: AppStrings.specRam,
-                                  value: specs['ram'],
-                                ),
+                              SpecChip(
+                                iconPath: AppAssets.specRamIcon,
+                                label: AppStrings.specRam,
+                                value: specs['ram'],
                               ),
                             if (specs['storage'] != null)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: SpecChip(
-                                  iconPath: AppAssets.specStorageIcon,
-                                  label: AppStrings.specStorage,
-                                  value: specs['storage'],
-                                ),
+                              SpecChip(
+                                iconPath: AppAssets.specStorageIcon,
+                                label: AppStrings.specStorage,
+                                value: specs['storage'],
                               ),
                             if (specs['battery'] != null)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: SpecChip(
-                                  iconPath: AppAssets.specBatteryIcon,
-                                  label: AppStrings.specBattery,
-                                  value: specs['battery'],
-                                ),
+                              SpecChip(
+                                iconPath: AppAssets.specBatteryIcon,
+                                label: AppStrings.specBattery,
+                                value: specs['battery'],
                               ),
                             if (specs['camera'] != null)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: SpecChip(
-                                  iconPath: AppAssets.specCameraIcon,
-                                  label: AppStrings.specCamera,
-                                  value: specs['camera'],
-                                ),
+                              SpecChip(
+                                iconPath: AppAssets.specCameraIcon,
+                                label: AppStrings.specCamera,
+                                value: specs['camera'],
                               ),
                             if (specs['display'] != null)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: SpecChip(
-                                  iconPath: AppAssets.specDisplayIcon,
-                                  label: AppStrings.specDisplay,
-                                  value: specs['display'],
-                                ),
+                              SpecChip(
+                                iconPath: AppAssets.specDisplayIcon,
+                                label: AppStrings.specDisplay,
+                                value: specs['display'],
                               ),
                           ],
                         ),

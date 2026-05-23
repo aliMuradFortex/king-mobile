@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/app_assets.dart';
 import '../controllers/forgot_password_verify_controller.dart';
 
 class ForgotPasswordVerifyView extends StatelessWidget {
-  const ForgotPasswordVerifyView({super.key});
+  final String flow;
+
+  const ForgotPasswordVerifyView({
+    super.key,
+    required this.flow,
+  });
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ForgotPasswordVerifyController());
+    controller.flow.value = flow;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -57,24 +62,19 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                   children: [
                     const SizedBox(height: 16),
                     
-                    // 1. Center Image Illustration
+                    // 1. Center Wireless Antenna Icon (matches Mockup)
                     Center(
                       child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDBEAFE),
-                          borderRadius: BorderRadius.circular(24),
+                        width: 100,
+                        height: 100,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE8F0F8), // Light blue base
+                          shape: BoxShape.circle,
                         ),
-                        padding: const EdgeInsets.all(24.0),
-                        child: Image.asset(
-                          AppAssets.verifyNumber,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.lock_person_rounded,
-                            color: Color(0xFF1E3A8A),
-                            size: 64,
-                          ),
+                        child: const Icon(
+                          Icons.sensors_rounded, // Antenna/wireless representation
+                          color: Color(0xFF0F3A5F),
+                          size: 48,
                         ),
                       ),
                     ),
@@ -82,11 +82,11 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                     
                     // 2. Title & Description
                     const Text(
-                      AppStrings.verifyPhoneTitle,
+                      'Verify Your Number',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 26,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -94,122 +94,148 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        AppStrings.verifyPhoneSub,
+                        'Enter the 6-digit code sent to +92 3XX XXXXXXX',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
+                          color: Color(0xFF0F3A5F), // Slate/Navy color matching mockup
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                           height: 1.4,
                         ),
                       ),
                     ),
                     const SizedBox(height: 36),
                     
-                    // 3. OTP Fields Row
+                    // 3. OTP 6-Circle Fields Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(4, (index) {
+                      children: List.generate(6, (index) {
                         return Container(
-                          width: 64,
-                          height: 64,
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(0xFFE2E8F0),
-                              width: 1.5,
-                            ),
+                            color: const Color(0xFFE2E8F0).withValues(alpha: 0.7),
+                            shape: BoxShape.circle,
                           ),
-                          child: TextField(
-                            controller: controller.controllers[index],
-                            focusNode: controller.focusNodes[index],
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            maxLength: 1,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                          child: Center(
+                            child: TextField(
+                              controller: controller.controllers[index],
+                              focusNode: controller.focusNodes[index],
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              maxLength: 1,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              decoration: const InputDecoration(
+                                counterText: '',
+                                hintText: '•',
+                                hintStyle: TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 18,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                                isDense: true,
+                              ),
+                              onChanged: (value) => controller.onDigitChanged(index, value),
                             ),
-                            decoration: const InputDecoration(
-                              counterText: '',
-                              border: InputBorder.none,
-                            ),
-                            onChanged: (value) => controller.onDigitChanged(index, value),
                           ),
                         );
                       }),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 36),
                     
-                    // 4. Timer / Resend Code
+                    // 4. Verify Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () => controller.verifyCode(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: const Text(
+                          'Verify',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    
+                    // 5. Timer with Clock Icon
+                    Obx(() {
+                      final seconds = controller.timerSeconds.value;
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            color: Color(0xFF855D11), // Goldish timer icon
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Resend code in 00:${seconds.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                              color: Color(0xFF855D11),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                    const SizedBox(height: 14),
+                    
+                    // 6. Resend OTP Link
                     Obx(() {
                       final seconds = controller.timerSeconds.value;
                       return Center(
-                        child: seconds > 0
-                            ? Text(
-                                'Resend code in 0:${seconds.toString().padLeft(2, '0')}',
-                                style: const TextStyle(
-                                  color: Color(0xFF64748B),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              )
-                            : TextButton(
-                                onPressed: controller.resendOtp,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.primary,
-                                ),
-                                child: const Text(
-                                  'Resend Code',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
+                        child: TextButton(
+                          onPressed: seconds > 0 ? null : controller.resendOtp,
+                          child: Text(
+                            'Resend OTP',
+                            style: TextStyle(
+                              color: seconds > 0 ? Colors.grey.shade400 : AppColors.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       );
                     }),
-                  ],
-                ),
-              ),
-            ),
-            
-            // 5. Verify Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () => controller.verifyCode(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text(
-                        'Verify Code',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                    const SizedBox(height: 12),
+                    
+                    // 7. Change Phone Number Link
+                    Center(
+                      child: InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Text(
+                            'Change Phone Number',
+                            style: TextStyle(
+                              color: Color(0xFF0F3A5F),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -24,7 +24,7 @@ class RegisterView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () {
             // Navigate back to onboarding (placeholder for user backtracking)
-            Get.back();
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -146,9 +146,8 @@ class RegisterView extends StatelessWidget {
                 }),
                 const SizedBox(height: 48),
                 
-                // 8. Continue Button
                 ElevatedButton(
-                  onPressed: controller.submit,
+                  onPressed: () => controller.submit(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

@@ -4,11 +4,12 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 class ForgotPasswordVerifyController extends GetxController {
-  final List<TextEditingController> controllers = List.generate(4, (_) => TextEditingController());
-  final List<FocusNode> focusNodes = List.generate(4, (_) => FocusNode());
+  final List<TextEditingController> controllers = List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
   
   final RxInt timerSeconds = 59.obs;
   Timer? _timer;
+  final RxString flow = 'recovery'.obs;
 
   @override
   void onInit() {
@@ -41,7 +42,7 @@ class ForgotPasswordVerifyController extends GetxController {
 
   void onDigitChanged(int index, String value) {
     if (value.isNotEmpty) {
-      if (index < 3) {
+      if (index < 5) {
         focusNodes[index + 1].requestFocus();
       } else {
         focusNodes[index].unfocus();
@@ -55,10 +56,10 @@ class ForgotPasswordVerifyController extends GetxController {
 
   void verifyCode(BuildContext context) {
     final code = controllers.map((c) => c.text).join();
-    if (code.length < 4) {
+    if (code.length < 6) {
       Get.snackbar(
         'Invalid Code',
-        'Please enter the full 4-digit code.',
+        'Please enter the full 6-digit code.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade600,
         colorText: Colors.white,
@@ -66,8 +67,8 @@ class ForgotPasswordVerifyController extends GetxController {
       return;
     }
 
-    // Go to verification complete screen
-    context.push('/verification-complete');
+    // Go to verification complete screen with flow parameter
+    context.push('/verification-complete?flow=${flow.value}');
   }
 
   @override

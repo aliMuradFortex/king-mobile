@@ -28,7 +28,7 @@ class SetNewPasswordController extends GetxController {
   void checkPassword(String val) {
     hasMinLength.value = val.length >= 8;
     hasNumber.value = val.contains(RegExp(r'[0-9]'));
-    hasSpecialChar.value = val.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>_#\-+=[]\/~`|]'));
+    hasSpecialChar.value = val.contains(RegExp(r'[^a-zA-Z0-9]'));
 
     int score = 0;
     if (hasMinLength.value) score++;

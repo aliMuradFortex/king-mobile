@@ -5,7 +5,12 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
 
 class VerificationCompletedView extends StatelessWidget {
-  const VerificationCompletedView({super.key});
+  final String flow;
+
+  const VerificationCompletedView({
+    super.key,
+    required this.flow,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +74,14 @@ class VerificationCompletedView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        AppStrings.verificationCompletedDesc,
+                        flow == 'registration'
+                            ? 'Your phone number has been verified successfully. Let\'s explore flexible installment plans.'
+                            : AppStrings.verificationCompletedDesc,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFF64748B),
                           fontSize: 14,
                           height: 1.5,
@@ -93,7 +100,13 @@ class VerificationCompletedView extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () => context.push('/set-new-password'),
+                  onPressed: () {
+                    if (flow == 'registration') {
+                      context.go('/home');
+                    } else {
+                      context.push('/set-new-password');
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(

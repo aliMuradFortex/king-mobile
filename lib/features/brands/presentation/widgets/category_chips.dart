@@ -13,6 +13,7 @@ class CategoryChips extends StatelessWidget {
     return SizedBox(
       height: 48,
       child: Obx(() {
+        final _ = controller.selectedCategory.value;
         return ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
