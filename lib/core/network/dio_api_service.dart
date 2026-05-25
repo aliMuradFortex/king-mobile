@@ -297,4 +297,90 @@ class DioApiService implements ApiService {
       throw UnknownException(e.toString());
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> getSliders() async {
+    await _checkConnectivity();
+    try {
+      final response = await _dio.get('/website-sliders');
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw UnknownException('Unexpected response format from server.');
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw UnknownException(e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getProfile() async {
+    await _checkConnectivity();
+    try {
+      final response = await _dio.get('/auth/profile');
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw UnknownException('Unexpected response format from server.');
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw UnknownException(e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> uploadSingleFile(
+    String filePath,
+    String folder,
+  ) async {
+    await _checkConnectivity();
+    try {
+      final FormData formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: filePath.split('/').last,
+        ),
+        'folder': folder,
+      });
+      final response = await _dio.post('/upload', data: formData);
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw UnknownException('Unexpected response format from server.');
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw UnknownException(e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateProfile(
+    String name,
+    String? imagePath,
+  ) async {
+    await _checkConnectivity();
+    try {
+      final Map<String, dynamic> dataMap = {'name': name};
+      if (imagePath != null) {
+        dataMap['image_path'] = imagePath;
+      }
+      final FormData formData = FormData.fromMap(dataMap);
+      final response = await _dio.post('/auth/profile', data: formData);
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw UnknownException('Unexpected response format from server.');
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw UnknownException(e.toString());
+    }
+  }
 }

@@ -18,6 +18,8 @@ import '../../features/profile/presentation/views/set_new_password_view.dart';
 import '../../features/profile/presentation/views/notifications_view.dart';
 import '../../features/auth/presentation/views/set_pin_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
+import '../../features/profile/presentation/views/edit_profile_view.dart';
+import '../../features/brands/presentation/views/comments_view.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -84,7 +86,8 @@ class AppRouter {
           final product = extra['product'] as Map<String, dynamic>;
           final plan = extra['plan'] as String;
           final branch = extra['branch'] as Map<String, dynamic>;
-          final personalDetails = extra['personalDetails'] as Map<String, String>;
+          final personalDetails =
+              extra['personalDetails'] as Map<String, String>;
           final frontCnic = extra['frontCnic'] as String;
           final backCnic = extra['backCnic'] as String;
           final frontCnicRelative = extra['frontCnicRelative'] as String;
@@ -180,6 +183,19 @@ class AppRouter {
         path: '/notifications',
         builder: (BuildContext context, GoRouterState state) {
           return const NotificationsView();
+        },
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (BuildContext context, GoRouterState state) {
+          return const EditProfileView();
+        },
+      ),
+      GoRoute(
+        path: '/comments',
+        builder: (BuildContext context, GoRouterState state) {
+          final product = state.extra as Map<String, dynamic>;
+          return CommentsView(product: product);
         },
       ),
     ],

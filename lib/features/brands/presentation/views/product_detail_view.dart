@@ -11,10 +11,7 @@ import '../widgets/plan_card.dart';
 class ProductDetailView extends StatelessWidget {
   final Map<String, dynamic> product;
 
-  const ProductDetailView({
-    super.key,
-    required this.product,
-  });
+  const ProductDetailView({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +113,10 @@ class ProductDetailView extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                     child: const Text(
                       'Retry',
@@ -139,16 +139,22 @@ class ProductDetailView extends StatelessWidget {
         final brandObj = details['brand'];
         final String brand = brandObj is Map
             ? (brandObj['name'] ?? '')
-            : (brandObj ?? (product['brand'] is Map ? product['brand']['name'] : product['brand'] ?? ''));
+            : (brandObj ??
+                  (product['brand'] is Map
+                      ? product['brand']['name']
+                      : product['brand'] ?? ''));
 
-        final String model = details['name'] ?? product['name'] ?? product['model'] ?? '';
+        final String model =
+            details['name'] ?? product['name'] ?? product['model'] ?? '';
 
         final double price = (details['price'] is num)
             ? (details['price'] as num).toDouble()
             : double.tryParse(details['price']?.toString() ?? '') ??
-                double.tryParse(product['min_price']?.toString() ?? '') ??
-                0.0;
-        final String priceFormatted = price > 0 ? 'Rs. ${controller.formatPrice(price)}' : '';
+                  double.tryParse(product['min_price']?.toString() ?? '') ??
+                  0.0;
+        final String priceFormatted = price > 0
+            ? 'Rs. ${controller.formatPrice(price)}'
+            : '';
 
         final List<dynamic> images = controller.productImages;
         final Map<String, dynamic> specs = controller.specs;
@@ -172,37 +178,46 @@ class ProductDetailView extends StatelessWidget {
                             itemCount: images.isNotEmpty ? images.length : 1,
                             onPageChanged: controller.updateCarouselIndex,
                             itemBuilder: (context, index) {
-                              final image = images.isNotEmpty ? images[index].toString() : '';
+                              final image = images.isNotEmpty
+                                  ? images[index].toString()
+                                  : '';
                               return Container(
                                 color: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                  vertical: 20,
+                                ),
                                 child: image.startsWith('http')
                                     ? Image.network(
                                         image,
                                         fit: BoxFit.contain,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            Icons.phone_iphone_rounded,
-                                            size: 120,
-                                            color: AppColors.textMuted,
-                                          );
-                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return const Icon(
+                                                Icons.phone_iphone_rounded,
+                                                size: 120,
+                                                color: AppColors.textMuted,
+                                              );
+                                            },
                                       )
                                     : Image.asset(
-                                        image.isNotEmpty ? image : 'assets/images/featured_handset.png',
+                                        image.isNotEmpty
+                                            ? image
+                                            : 'assets/images/featured_handset.png',
                                         fit: BoxFit.contain,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            Icons.phone_iphone_rounded,
-                                            size: 120,
-                                            color: AppColors.textMuted,
-                                          );
-                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return const Icon(
+                                                Icons.phone_iphone_rounded,
+                                                size: 120,
+                                                color: AppColors.textMuted,
+                                              );
+                                            },
                                       ),
                               );
                             },
                           ),
-                          
+
                           // Dots Page Indicator
                           Positioned(
                             bottom: 12,
@@ -210,28 +225,34 @@ class ProductDetailView extends StatelessWidget {
                             right: 0,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(images.isNotEmpty ? images.length : 1, (index) {
-                                final isCurrent = index == controller.carouselIndex.value;
-                                return AnimatedContainer(
-                                  duration: const Duration(milliseconds: 250),
-                                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                                  height: 6,
-                                  width: isCurrent ? 18 : 6,
-                                  decoration: BoxDecoration(
-                                    color: isCurrent
-                                        ? AppColors.primary
-                                        : const Color(0xFFCBD5E1),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                );
-                              }),
+                              children: List.generate(
+                                images.isNotEmpty ? images.length : 1,
+                                (index) {
+                                  final isCurrent =
+                                      index == controller.carouselIndex.value;
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 250),
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4.0,
+                                    ),
+                                    height: 6,
+                                    width: isCurrent ? 18 : 6,
+                                    decoration: BoxDecoration(
+                                      color: isCurrent
+                                          ? AppColors.primary
+                                          : const Color(0xFFCBD5E1),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 2. Info details section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -252,7 +273,10 @@ class ProductDetailView extends StatelessWidget {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFDCFCE7),
                                   borderRadius: BorderRadius.circular(8),
@@ -260,7 +284,11 @@ class ProductDetailView extends StatelessWidget {
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 12),
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Color(0xFF16A34A),
+                                      size: 12,
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
                                       AppStrings.inStock,
@@ -276,7 +304,7 @@ class ProductDetailView extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 6),
-                          
+
                           // Product Model Name
                           Text(
                             model,
@@ -287,7 +315,7 @@ class ProductDetailView extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          
+
                           // Price tag
                           Text(
                             priceFormatted,
@@ -309,7 +337,7 @@ class ProductDetailView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // 3. Key Specifications Section
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +354,7 @@ class ProductDetailView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
+
                         // Horizontal scrollable list of key specification chips
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -374,7 +402,66 @@ class ProductDetailView extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    
+
+                    // 3.5 Reviews & Comments entry panel
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: InkWell(
+                        onTap: () => context.push('/comments', extra: product),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.comment_outlined,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'User Reviews & Comments',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '0 Comments',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: Colors.grey.shade400,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
                     // 4. Installment plan selection area
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -390,7 +477,7 @@ class ProductDetailView extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          
+
                           // Plan selector cards list
                           Column(
                             children: controller.planOptions.map((option) {
@@ -413,7 +500,7 @@ class ProductDetailView extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // 5. Sticky Bottom Action Button Bar
             Container(
               padding: const EdgeInsets.all(20),

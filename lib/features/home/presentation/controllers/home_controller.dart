@@ -38,12 +38,17 @@ class HomeController extends GetxController {
   final RxBool isProductsLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
+  // Sliders State
+  final RxList<dynamic> sliders = <dynamic>[].obs;
+  final RxBool isSlidersLoading = false.obs;
+
   final ApiService _apiService = DioApiService();
 
   @override
   void onInit() {
     super.onInit();
     fetchProducts();
+    fetchSliders();
     searchController.addListener(() {
       searchQuery.value = searchController.text;
     });
@@ -53,6 +58,22 @@ class HomeController extends GetxController {
   void onClose() {
     searchController.dispose();
     super.onClose();
+  }
+
+  Future<void> fetchSliders() async {
+    try {
+      isSlidersLoading.value = true;
+      final response = await _apiService.getSliders();
+      isSlidersLoading.value = false;
+      final success = response['success'] as bool? ?? false;
+      if (success && response['data'] != null) {
+        final data = response['data'] as Map<String, dynamic>;
+        sliders.value = data['sliders'] as List<dynamic>? ?? [];
+      }
+    } catch (e) {
+      isSlidersLoading.value = false;
+      debugPrint('Error fetching sliders: $e');
+    }
   }
 
   Future<void> fetchProducts() async {
@@ -226,7 +247,9 @@ class HomeController extends GetxController {
         if (pRam != null && pRam != 'N/A' && pRam != ramFilter) {
           return false;
         }
-        if (pStorage != null && pStorage != 'N/A' && pStorage != storageFilter) {
+        if (pStorage != null &&
+            pStorage != 'N/A' &&
+            pStorage != storageFilter) {
           return false;
         }
         if (pBackCamera != null && pBackCamera != backCameraFilter) {

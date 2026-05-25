@@ -31,4 +31,16 @@ abstract class ApiService {
 
   /// Logs out the user and invalidates the session token.
   Future<Map<String, dynamic>> logout();
+
+  /// Retrieves homepage website sliders.
+  Future<Map<String, dynamic>> getSliders();
+
+  /// Retrieves user profile details.
+  Future<Map<String, dynamic>> getProfile();
+
+  /// Uploads a single file to the server.
+  Future<Map<String, dynamic>> uploadSingleFile(String filePath, String folder);
+
+  /// Updates user profile details (name and profile image path).
+  Future<Map<String, dynamic>> updateProfile(String name, String? imagePath);
 }

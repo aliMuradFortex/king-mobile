@@ -6,6 +6,7 @@ import '../../../../core/network/dio_api_service.dart';
 import '../../../../core/services/secure_storage_service.dart';
 
 import '../../../../core/widgets/custom_snackbar.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 
 class LoginController extends GetxController {
   final TextEditingController phoneController = TextEditingController();
@@ -66,13 +67,17 @@ class LoginController extends GetxController {
       isLoading.value = false;
 
       final success = response['success'] as bool? ?? false;
-      final message = response['message'] as String? ?? 'Logged in successfully.';
+      final message =
+          response['message'] as String? ?? 'Logged in successfully.';
       final data = response['data'] as Map<String, dynamic>?;
 
       if (success && data != null) {
         final token = data['token'] as String?;
         if (token != null) {
           await SecureStorageService.instance.saveToken(token);
+          if (Get.isRegistered<ProfileController>()) {
+            Get.find<ProfileController>().fetchProfile();
+          }
         }
 
         CustomSnackBar.show(

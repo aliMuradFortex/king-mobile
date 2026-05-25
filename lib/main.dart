@@ -3,8 +3,11 @@ import 'package:get/get.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
+import 'features/profile/presentation/controllers/profile_controller.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Get.put(ProfileController(), permanent: true);
   runApp(const MainApp());
 }
 

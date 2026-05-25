@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -19,27 +21,27 @@ class HomeHeader extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
+              border: Border.all(color: Colors.grey.shade200, width: 1),
             ),
             child: ClipOval(
-              child: Image.asset(
-                AppAssets.person,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.account_circle,
-                    size: 48,
-                    color: AppColors.textMuted,
+              child: Obx(() {
+                final profileController = Get.find<ProfileController>();
+                final imageUrl =
+                    profileController.profileData['image'] as String?;
+                if (imageUrl != null && imageUrl.isNotEmpty) {
+                  return Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Image.asset(AppAssets.person, fit: BoxFit.cover),
                   );
-                },
-              ),
+                }
+                return Image.asset(AppAssets.person, fit: BoxFit.cover);
+              }),
             ),
           ),
           const SizedBox(width: 12),
-          
+
           // 2. Greeting Column
           Expanded(
             child: Column(
@@ -51,26 +53,32 @@ class HomeHeader extends StatelessWidget {
                     Text(
                       AppStrings.greetingPrefix,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
-                          ),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  AppStrings.greetingUser,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                ),
+                Obx(() {
+                  final profileController = Get.find<ProfileController>();
+                  final name =
+                      profileController.profileData['name'] as String? ??
+                      'Affan';
+                  return Text(
+                    'Hello $name!',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  );
+                }),
               ],
             ),
           ),
-          
+
           // 3. Notification Button with red Badge
           Stack(
             clipBehavior: Clip.none,
@@ -84,7 +92,10 @@ class HomeHeader extends StatelessWidget {
                 top: -4,
                 right: -4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.shade600,
                     borderRadius: BorderRadius.circular(10),
@@ -109,7 +120,7 @@ class HomeHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 12),
-          
+
           // 4. Settings Button
           _buildIconButton(
             iconPath: AppAssets.settings,

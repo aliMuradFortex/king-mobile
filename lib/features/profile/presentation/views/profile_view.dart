@@ -6,6 +6,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../controllers/profile_settings_controller.dart';
+import '../controllers/profile_controller.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -80,16 +81,27 @@ class ProfileView extends StatelessWidget {
                         ],
                       ),
                       child: ClipOval(
-                        child: Image.asset(
-                          AppAssets.person,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.account_circle,
-                                size: 120,
-                                color: AppColors.textMuted,
-                              ),
-                        ),
+                        child: Obx(() {
+                          final profileController =
+                              Get.find<ProfileController>();
+                          final imageUrl =
+                              profileController.profileData['image'] as String?;
+                          if (imageUrl != null && imageUrl.isNotEmpty) {
+                            return Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    AppAssets.person,
+                                    fit: BoxFit.cover,
+                                  ),
+                            );
+                          }
+                          return Image.asset(
+                            AppAssets.person,
+                            fit: BoxFit.cover,
+                          );
+                        }),
                       ),
                     ),
 
@@ -127,23 +139,35 @@ class ProfileView extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    const Text(
-                      AppStrings.profileUserName,
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Obx(() {
+                      final profileController = Get.find<ProfileController>();
+                      final name =
+                          profileController.profileData['name'] as String? ??
+                          AppStrings.profileUserName;
+                      return Text(
+                        name,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 4),
-                    const Text(
-                      AppStrings.profileUserPhone,
-                      style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Obx(() {
+                      final profileController = Get.find<ProfileController>();
+                      final phone =
+                          profileController.profileData['phone'] as String? ??
+                          AppStrings.profileUserPhone;
+                      return Text(
+                        phone,
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -163,9 +187,7 @@ class ProfileView extends StatelessWidget {
                       iconPath: AppAssets.editProfile,
                       title: AppStrings.editProfileLabel,
                       fallbackIcon: Icons.edit_rounded,
-                      onTap: () {
-                        // Action for Edit Profile
-                      },
+                      onTap: () => context.push('/edit-profile'),
                     ),
                     const SizedBox(height: 12),
 
