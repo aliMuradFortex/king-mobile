@@ -87,8 +87,13 @@ class ProfileView extends StatelessWidget {
                           final imageUrl =
                               profileController.profileData['image'] as String?;
                           if (imageUrl != null && imageUrl.isNotEmpty) {
+                            final cleanUrl = imageUrl.contains('/storage/http')
+                                ? imageUrl.substring(
+                                    imageUrl.indexOf('http', 5),
+                                  )
+                                : imageUrl;
                             return Image.network(
-                              imageUrl,
+                              cleanUrl,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Image.asset(
@@ -249,16 +254,6 @@ class ProfileView extends StatelessWidget {
                                       color: Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    AppStrings.myPlansSubLabel,
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                 ],

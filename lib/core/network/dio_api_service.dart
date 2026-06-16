@@ -14,6 +14,7 @@ class DioApiService implements ApiService {
           Dio(
             BaseOptions(
               baseUrl: 'https://kingmobiles.com.pk/api',
+              // baseUrl: 'http://172.16.16.82:8000/api',
               connectTimeout: const Duration(seconds: 15),
               receiveTimeout: const Duration(seconds: 15),
             ),
@@ -179,10 +180,13 @@ class DioApiService implements ApiService {
   }
 
   @override
-  Future<Map<String, dynamic>> getProducts() async {
+  Future<Map<String, dynamic>> getProducts([String? search]) async {
     await _checkConnectivity();
     try {
-      final response = await _dio.get('/products');
+      final response = await _dio.get(
+        '/products',
+        queryParameters: search != null && search.isNotEmpty ? {'search': search} : null,
+      );
       if (response.data is Map<String, dynamic>) {
         return response.data as Map<String, dynamic>;
       }

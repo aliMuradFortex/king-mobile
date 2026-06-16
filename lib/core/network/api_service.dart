@@ -12,7 +12,7 @@ abstract class ApiService {
   Future<Map<String, dynamic>> login(String phone, String pin);
 
   /// Retrieves the list of products and brands.
-  Future<Map<String, dynamic>> getProducts();
+  Future<Map<String, dynamic>> getProducts([String? search]);
 
   /// Retrieves the details for a specific product.
   Future<Map<String, dynamic>> getProductDetails(int id);

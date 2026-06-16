@@ -52,6 +52,9 @@ class HomeController extends GetxController {
     searchController.addListener(() {
       searchQuery.value = searchController.text;
     });
+    debounce(searchQuery, (String query) {
+      fetchProducts(query);
+    }, time: const Duration(milliseconds: 400));
   }
 
   @override
@@ -76,11 +79,11 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts([String? search]) async {
     try {
       isProductsLoading.value = true;
       errorMessage.value = '';
-      final response = await _apiService.getProducts();
+      final response = await _apiService.getProducts(search);
       isProductsLoading.value = false;
 
       final success = response['success'] as bool? ?? false;

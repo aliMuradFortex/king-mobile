@@ -5,14 +5,15 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../controllers/profile_settings_controller.dart';
+import '../controllers/profile_controller.dart';
 
 class ProfileSettingsView extends StatelessWidget {
   const ProfileSettingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Inject or find settings controller
-    final controller = Get.put(ProfileSettingsController());
+    // Inject settings controller
+    Get.put(ProfileSettingsController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -79,11 +80,6 @@ class ProfileSettingsView extends StatelessWidget {
                       title: AppStrings.settingsPassword,
                       onTap: () => context.push('/set-new-password'),
                     ),
-                    _buildDivider(),
-                    _buildSettingsItem(
-                      icon: Icons.payment_rounded,
-                      title: AppStrings.settingsPaymentMethods,
-                    ),
                   ],
                 ),
               ),
@@ -105,12 +101,6 @@ class ProfileSettingsView extends StatelessWidget {
                       title: AppStrings.settingsNotifications,
                       onTap: () => context.push('/notifications'),
                     ),
-                    _buildDivider(),
-                    _buildSettingsItem(
-                      icon: Icons.language_rounded,
-                      title: AppStrings.settingsLanguage,
-                      subtitle: AppStrings.settingsLanguageSub,
-                    ),
                   ],
                 ),
               ),
@@ -127,16 +117,6 @@ class ProfileSettingsView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   children: [
-                    // Biometrics toggle switch item
-                    Obx(() {
-                      return _buildSwitchItem(
-                        icon: Icons.fingerprint_rounded,
-                        title: AppStrings.settingsBiometrics,
-                        value: controller.biometricsEnabled.value,
-                        onChanged: controller.toggleBiometrics,
-                      );
-                    }),
-                    _buildDivider(),
                     _buildSettingsItem(
                       icon: Icons.privacy_tip_outlined,
                       title: AppStrings.settingsPrivacyPolicy,
@@ -189,87 +169,103 @@ class ProfileSettingsView extends StatelessWidget {
   }
 
   Widget _buildMiniHeader() {
-    return Row(
-      children: [
-        // Circular smaller avatar
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF1F5F9), width: 2),
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  AppAssets.person,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.account_circle,
-                    size: 68,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ),
-            ),
+    final profileController = Get.find<ProfileController>();
+    return Obx(() {
+      final name = profileController.profileData['name'] as String? ??
+          AppStrings.profileUserName;
+      final phone = profileController.profileData['phone'] as String? ??
+          AppStrings.profileUserPhone;
+      final imageUrl = profileController.profileData['image'] as String?;
 
-            // Gold checkmark badge overlay
-            Positioned(
-              bottom: 1,
-              right: 1,
-              child: Container(
-                width: 18,
-                height: 18,
+      return Row(
+        children: [
+          // Circular smaller avatar
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFCD34D),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(color: const Color(0xFFF1F5F9), width: 2),
                 ),
-                padding: const EdgeInsets.all(2.5),
-                child: Image.asset(
-                  AppAssets.profileCheck,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.check_rounded,
-                    color: AppColors.primary,
-                    size: 10,
-                  ),
+                child: ClipOval(
+                  child: imageUrl != null && imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl.contains('/storage/http')
+                              ? imageUrl.substring(imageUrl.indexOf('http', 5))
+                              : imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.asset(
+                            AppAssets.person,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Image.asset(
+                          AppAssets.person,
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 16),
 
-        // Name & Phone
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                AppStrings.profileUserName,
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                AppStrings.profileUserPhone,
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+              // Gold checkmark badge overlay
+              Positioned(
+                bottom: 1,
+                right: 1,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFCD34D),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  padding: const EdgeInsets.all(2.5),
+                  child: Image.asset(
+                    AppAssets.profileCheck,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.check_rounded,
+                      color: AppColors.primary,
+                      size: 10,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
-    );
+          const SizedBox(width: 16),
+
+          // Name & Phone
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  phone,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildSectionHeader(String title) {
@@ -366,53 +362,7 @@ class ProfileSettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitchItem({
-    required IconData icon,
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        children: [
-          // Left blue circle icon
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFFDBEAFE),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: const Color(0xFF1E3A8A), size: 20),
-          ),
-          const SizedBox(width: 14),
 
-          // Label
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-
-          // Switch widget
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.primary,
-            activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
-            inactiveThumbColor: Colors.white,
-            inactiveTrackColor: const Color(0xFFCBD5E1),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDivider() {
     return Container(

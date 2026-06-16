@@ -249,8 +249,11 @@ class _EditProfileViewState extends State<EditProfileView> {
 
     final networkUrl = _profileController.profileData['image'] as String?;
     if (networkUrl != null && networkUrl.isNotEmpty) {
+      final cleanUrl = networkUrl.contains('/storage/http')
+          ? networkUrl.substring(networkUrl.indexOf('http', 5))
+          : networkUrl;
       return Image.network(
-        networkUrl,
+        cleanUrl,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
             Image.asset(AppAssets.person, fit: BoxFit.cover),

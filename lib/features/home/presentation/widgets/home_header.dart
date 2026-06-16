@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 
@@ -29,8 +28,11 @@ class HomeHeader extends StatelessWidget {
                 final imageUrl =
                     profileController.profileData['image'] as String?;
                 if (imageUrl != null && imageUrl.isNotEmpty) {
+                  final cleanUrl = imageUrl.contains('/storage/http')
+                      ? imageUrl.substring(imageUrl.indexOf('http', 5))
+                      : imageUrl;
                   return Image.network(
-                    imageUrl,
+                    cleanUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         Image.asset(AppAssets.person, fit: BoxFit.cover),
@@ -48,17 +50,13 @@ class HomeHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      AppStrings.greetingPrefix,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
+                Text(
+                  _getGreeting(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Obx(() {
@@ -79,45 +77,11 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
 
-          // 3. Notification Button with red Badge
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              _buildIconButton(
-                iconPath: AppAssets.bell,
-                fallbackIcon: Icons.notifications_none_rounded,
-                onPressed: () => context.push('/notifications'),
-              ),
-              Positioned(
-                top: -4,
-                right: -4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade600,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '5+',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          // 3. Notification Button
+          _buildIconButton(
+            iconPath: AppAssets.bell,
+            fallbackIcon: Icons.notifications_none_rounded,
+            onPressed: () => context.push('/notifications'),
           ),
           const SizedBox(width: 12),
 
@@ -158,5 +122,18 @@ class HomeHeader extends StatelessWidget {
         onPressed: onPressed,
       ),
     );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return 'Good Morning 👋';
+    } else if (hour >= 12 && hour < 17) {
+      return 'Good Afternoon 👋';
+    } else if (hour >= 17 && hour < 21) {
+      return 'Good Evening 👋';
+    } else {
+      return 'Good Night 👋';
+    }
   }
 }

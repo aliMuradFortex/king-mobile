@@ -1,4 +1,4 @@
-package com.example.king_mobile
+package com.techsops.kingmobiles
 
 import io.flutter.embedding.android.FlutterActivity
 

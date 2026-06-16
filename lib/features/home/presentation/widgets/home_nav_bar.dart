@@ -14,7 +14,7 @@ class HomeNavBar extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      height: 80 + bottomPadding,
+      height: 64 + bottomPadding,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -89,11 +89,11 @@ class HomeNavBar extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: isSelected
             ? BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               )
             : null,
         child: Column(
@@ -101,22 +101,22 @@ class HomeNavBar extends StatelessWidget {
           children: [
             Image.asset(
               isSelected ? activeIcon : inactiveIcon,
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return Icon(
                   _getDefaultIconData(index),
                   color: isSelected ? Colors.white : AppColors.textMuted,
-                  size: 24,
+                  size: 20,
                 );
               },
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 8.5,
                 fontWeight: FontWeight.bold,
                 color: isSelected ? Colors.white : AppColors.textMuted,
               ),

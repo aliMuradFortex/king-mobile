@@ -59,7 +59,7 @@ class ProfileController extends GetxController {
         // First step: upload the image to /upload
         final uploadResponse = await _apiService.uploadSingleFile(
           localImagePath,
-          'profile_images',
+          'cnic_images',
         );
         final uploadSuccess = uploadResponse['success'] as bool? ?? false;
         if (uploadSuccess && uploadResponse['data'] != null) {
