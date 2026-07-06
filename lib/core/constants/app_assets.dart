@@ -1,7 +1,7 @@
 class AppAssets {
   static const String _imagesPath = 'assets/images';
   
-  static const String logo = '$_imagesPath/logo.png';
+  static const String logo = '$_imagesPath/logoo.png';
   static const String splashBackground = '$_imagesPath/splash_background.png';
   static const String onboarding1 = '$_imagesPath/onboarding.png';
   static const String onboarding2 = '$_imagesPath/onboarding2.png';

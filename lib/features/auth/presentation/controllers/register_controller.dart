@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_service.dart';
 import '../../../../core/network/dio_api_service.dart';
+import '../../../../core/services/secure_storage_service.dart';
 
 import '../../../../core/widgets/custom_snackbar.dart';
 
@@ -41,8 +42,11 @@ class RegisterController extends GetxController {
       final response = await _apiService.sendOtp(phone);
       isLoading.value = false;
 
+      if (!context.mounted) return;
+
       final success = response['success'] as bool? ?? false;
       final message = response['message'] as String? ?? 'OTP sent successfully.';
+      final data = response['data'] as Map<String, dynamic>?;
 
       if (success) {
         CustomSnackBar.show(
@@ -51,9 +55,21 @@ class RegisterController extends GetxController {
           message: message,
           isError: false,
         );
-        // Route to verification screen under the registration flow, passing phone
-        if (context.mounted) {
-          context.push('/verify-phone?flow=registration&phone=$phone');
+        
+        final otpRequired = data?['otp_required'] as bool? ?? true;
+        if (!otpRequired) {
+          final token = data?['token'] as String?;
+          if (token != null) {
+            await SecureStorageService.instance.saveToken(token);
+          }
+          if (context.mounted) {
+            context.push('/set-pin');
+          }
+        } else {
+          // Route to verification screen under the registration flow, passing phone
+          if (context.mounted) {
+            context.push('/verify-phone?flow=registration&phone=$phone');
+          }
         }
       } else {
         CustomSnackBar.show(
@@ -65,12 +81,14 @@ class RegisterController extends GetxController {
       }
     } catch (e) {
       isLoading.value = false;
-      CustomSnackBar.show(
-        context,
-        title: 'Connection Error',
-        message: e.toString(),
-        isError: true,
-      );
+      if (context.mounted) {
+        CustomSnackBar.show(
+          context,
+          title: 'Connection Error',
+          message: e.toString(),
+          isError: true,
+        );
+      }
     }
   }
 }
