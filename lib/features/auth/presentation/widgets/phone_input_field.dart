@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_assets.dart';
 
 class PhoneInputField extends StatelessWidget {
   final TextEditingController controller;
@@ -25,34 +24,10 @@ class PhoneInputField extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Country Flag (Pakistan flag.png)
-          Image.asset(
-            AppAssets.flag,
-            width: 28,
-            height: 18,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.flag_rounded, color: AppColors.primary);
-            },
-          ),
-          const SizedBox(width: 10),
-          
-          // Country Code +92
-          const Text(
-            '+92',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Vertical Divider
-          Container(
-            width: 1.2,
-            height: 24,
-            color: Colors.grey.shade300,
+          const Icon(
+            Icons.phone_android_rounded,
+            color: AppColors.primary,
+            size: 20,
           ),
           const SizedBox(width: 12),
           
@@ -68,10 +43,10 @@ class PhoneInputField extends StatelessWidget {
               ),
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10), // Pakistani phone number length without leading zero
+                LengthLimitingTextInputFormatter(11), // پاکستانی phone number length with leading zero
               ],
               decoration: InputDecoration(
-                hintText: '300 1234567',
+                hintText: '0300 1234567',
                 hintStyle: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,

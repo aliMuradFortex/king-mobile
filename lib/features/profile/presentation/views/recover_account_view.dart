@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -119,7 +120,7 @@ class RecoverAccountView extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     
-                    // Styled Input box with +92 prefix and vertical divider
+                    // Styled Input box with phone icon
                     Container(
                       height: 56,
                       decoration: BoxDecoration(
@@ -129,32 +130,27 @@ class RecoverAccountView extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Row(
                         children: [
-                          const Text(
-                            '+92',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            width: 1,
-                            height: 24,
-                            color: const Color(0xFFCBD5E1),
+                          const Icon(
+                            Icons.phone_android_rounded,
+                            color: AppColors.primary,
+                            size: 20,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextField(
                               controller: controller.phoneController,
                               keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(11), // Pakistani phone number length with leading zero
+                              ],
                               style: const TextStyle(
                                 color: AppColors.primary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: const InputDecoration(
-                                hintText: 'Phone Number',
+                                hintText: '0300 1234567',
                                 hintStyle: TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 15,

@@ -99,7 +99,7 @@ class ForgotPasswordVerifyView extends StatelessWidget {
                     Obx(() => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        'Enter the 6-digit code sent to ${controller.phone.value.isNotEmpty ? controller.phone.value : "+92 3XX XXXXXXX"}',
+                        'Enter the 6-digit code sent to ${controller.phone.value.isNotEmpty ? controller.phone.value : "03XX XXXXXXX"}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Color(0xFF0F3A5F), // Slate/Navy color matching mockup

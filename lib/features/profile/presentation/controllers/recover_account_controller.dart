@@ -22,7 +22,7 @@ class RecoverAccountController extends GetxController {
     CustomSnackBar.show(
       context,
       title: 'Recovery Initialized',
-      message: 'A 4-digit OTP has been sent to +92 $phoneNumber',
+      message: 'A 4-digit OTP has been sent to $phoneNumber',
       isError: false,
     );
 

@@ -141,7 +141,7 @@ class PersonalDetailsStep extends StatelessWidget {
     );
   }
 
-  // Phone Number Input with +92 indicator prefix
+  // Phone Number Input with phone icon
   Widget _buildPhoneField() {
     return Container(
       decoration: BoxDecoration(
@@ -150,23 +150,13 @@ class PersonalDetailsStep extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Prefilled country code
           const Padding(
-            padding: EdgeInsets.only(left: 24, right: 12),
-            child: Text(
-              '+92',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            padding: EdgeInsets.only(left: 20),
+            child: Icon(
+              Icons.phone_android_rounded,
+              color: AppColors.primary,
+              size: 20,
             ),
-          ),
-          // Vertical divider line
-          Container(
-            height: 20,
-            width: 1.5,
-            color: const Color(0xFFCBD5E1),
           ),
           const SizedBox(width: 12),
           // Actual input field
@@ -176,7 +166,7 @@ class PersonalDetailsStep extends StatelessWidget {
               keyboardType: TextInputType.phone,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10), // Limit Pakistani mobile number length (excluding 0)
+                LengthLimitingTextInputFormatter(11), // Limit Pakistani mobile number length (including 0)
               ],
               style: const TextStyle(
                 color: AppColors.primary,
@@ -184,7 +174,7 @@ class PersonalDetailsStep extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
               decoration: const InputDecoration(
-                hintText: AppStrings.phoneLabelPlaceholder,
+                hintText: '0300 1234567',
                 hintStyle: TextStyle(
                   color: Color(0xFF94A3B8),
                   fontSize: 15,

@@ -157,7 +157,7 @@ class AppStrings {
   // Profile Dashboard Screen
   static const String myProfileTitle = 'My Profile';
   static const String profileUserName = 'Ahmed Ali';
-  static const String profileUserPhone = '+92 300 1234567';
+  static const String profileUserPhone = '0300 1234567';
   static const String editProfileLabel = 'Edit Profile';
   static const String myPlansLabel = 'My Plans';
   static const String myPlansSubLabel = '2 ACTIVE INSTALLMENTS';
