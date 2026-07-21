@@ -57,7 +57,22 @@ class RegisterController extends GetxController {
         );
         
         final otpRequired = data?['otp_required'] as bool? ?? true;
-        if (!otpRequired) {
+        final isSuperUser = data?['is_super_user'] as bool? ?? false;
+        final hasPassword = data?['has_password'] as bool? ?? false;
+
+        // Save status to SecureStorage
+        await SecureStorageService.instance.write('is_super_user', isSuperUser.toString());
+        await SecureStorageService.instance.write('has_password', hasPassword.toString());
+
+        if (isSuperUser && hasPassword) {
+          final token = data?['token'] as String?;
+          if (token != null) {
+            await SecureStorageService.instance.saveToken(token);
+          }
+          if (context.mounted) {
+            context.go('/login?phone=$phone');
+          }
+        } else if (!otpRequired) {
           final token = data?['token'] as String?;
           if (token != null) {
             await SecureStorageService.instance.saveToken(token);

@@ -146,7 +146,7 @@ class DioApiService implements ApiService {
   Future<Map<String, dynamic>> setPin(String pin) async {
     await _checkConnectivity();
     try {
-      final response = await _dio.post('/auth/set-pin', data: {'pin': pin});
+      final response = await _dio.post('/auth/set-password', data: {'password': pin});
       if (response.data is Map<String, dynamic>) {
         return response.data as Map<String, dynamic>;
       }
@@ -165,7 +165,10 @@ class DioApiService implements ApiService {
     try {
       final response = await _dio.post(
         '/auth/login',
-        data: {'phone': _formatPhone(phone), 'pin': pin},
+        data: {
+          'phone': _formatPhone(phone),
+          'password': pin,
+        },
       );
       if (response.data is Map<String, dynamic>) {
         return response.data as Map<String, dynamic>;
@@ -376,6 +379,23 @@ class DioApiService implements ApiService {
       }
       final FormData formData = FormData.fromMap(dataMap);
       final response = await _dio.post('/auth/profile', data: formData);
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw UnknownException('Unexpected response format from server.');
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw UnknownException(e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getMyOrders() async {
+    await _checkConnectivity();
+    try {
+      final response = await _dio.get('/my-orders');
       if (response.data is Map<String, dynamic>) {
         return response.data as Map<String, dynamic>;
       }

@@ -202,6 +202,15 @@ class FilterBottomSheet extends StatelessWidget {
       ),
       child: Obx(() {
         final currentValues = controller.tempPriceRange.value;
+        final minLimit = controller.apiMinPrice.value;
+        final maxLimit = controller.apiMaxPrice.value;
+        
+        // Ensure values are within dynamic slider limits
+        final clampedValues = RangeValues(
+          currentValues.start.clamp(minLimit, maxLimit),
+          currentValues.end.clamp(minLimit, maxLimit),
+        );
+        
         return Column(
           children: [
             // Dual Slider widget
@@ -218,10 +227,10 @@ class FilterBottomSheet extends StatelessWidget {
                 ),
               ),
               child: RangeSlider(
-                values: currentValues,
-                min: 10000,
-                max: 150000,
-                divisions: 14,
+                values: clampedValues,
+                min: minLimit,
+                max: maxLimit,
+                divisions: 20,
                 onChanged: (RangeValues newValues) {
                   controller.tempPriceRange.value = newValues;
                 },
@@ -244,7 +253,7 @@ class FilterBottomSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Rs. ${currentValues.start.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                      'Rs. ${clampedValues.start.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -265,7 +274,7 @@ class FilterBottomSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Rs. ${currentValues.end.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                      'Rs. ${clampedValues.end.round().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -287,38 +296,37 @@ class FilterBottomSheet extends StatelessWidget {
     final plans = ['3 Months', '6 Months', '12 Months'];
     return Obx(() {
       final selected = controller.tempInstallmentPlan.value;
-      return Row(
+      return Wrap(
+        spacing: 12,
+        runSpacing: 10,
         children: plans.map((plan) {
           final isSelected = selected == plan;
-          return Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: GestureDetector(
-              onTap: () => controller.tempInstallmentPlan.value = plan,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+          return GestureDetector(
+            onTap: () => controller.tempInstallmentPlan.value = plan,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.secondary : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.secondaryDark
+                      : Colors.grey.shade300,
+                  width: 1,
                 ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.secondary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.secondaryDark
-                        : Colors.grey.shade300,
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  plan,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected
-                        ? const Color(0xFF6B5115)
-                        : AppColors.primary,
-                  ),
+              ),
+              child: Text(
+                plan,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected
+                      ? const Color(0xFF6B5115)
+                      : AppColors.primary,
                 ),
               ),
             ),
@@ -330,37 +338,36 @@ class FilterBottomSheet extends StatelessWidget {
 
   // RAM Circular Selector
   Widget _buildRamSelector(HomeController controller) {
-    final options = ['4GB', '6GB', '8GB', '12GB'];
     return Obx(() {
+      final options = controller.getRamOptions();
       final selected = controller.tempRam.value;
-      return Row(
+      return Wrap(
+        spacing: 14,
+        runSpacing: 12,
         children: options.map((option) {
           final isSelected = selected == option;
-          return Padding(
-            padding: const EdgeInsets.only(right: 14.0),
-            child: GestureDetector(
-              onTap: () => controller.tempRam.value = option,
-              child: Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : Colors.grey.shade300,
-                    width: 1,
-                  ),
+          return GestureDetector(
+            onTap: () => controller.tempRam.value = option,
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primary
+                      : Colors.grey.shade300,
+                  width: 1,
                 ),
-                child: Center(
-                  child: Text(
-                    option,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : AppColors.primary,
-                    ),
+              ),
+              child: Center(
+                child: Text(
+                  option,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : AppColors.primary,
                   ),
                 ),
               ),
@@ -373,43 +380,50 @@ class FilterBottomSheet extends StatelessWidget {
 
   // Storage Two-Line Circular Selector
   Widget _buildStorageSelector(HomeController controller) {
-    final options = ['64 GB', '128 GB', '256 GB', '512 GB'];
     return Obx(() {
+      final options = controller.getStorageOptions();
       final selected = controller.tempStorage.value;
-      return Row(
+      return Wrap(
+        spacing: 14,
+        runSpacing: 12,
         children: options.map((option) {
           final isSelected = selected == option;
-          final parts = option.split(' ');
-          return Padding(
-            padding: const EdgeInsets.only(right: 14.0),
-            child: GestureDetector(
-              onTap: () => controller.tempStorage.value = option,
-              child: Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : Colors.grey.shade300,
-                    width: 1,
-                  ),
+          final parts = option.contains(' ') 
+              ? option.split(' ') 
+              : (option.endsWith('GB') 
+                  ? [option.replaceAll('GB', ''), 'GB'] 
+                  : (option.endsWith('TB') 
+                      ? [option.replaceAll('TB', ''), 'TB'] 
+                      : [option, '']));
+          return GestureDetector(
+            onTap: () => controller.tempStorage.value = option,
+            child: Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primary
+                      : Colors.grey.shade300,
+                  width: 1,
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        parts[0],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : AppColors.primary,
-                          height: 1.1,
-                        ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      parts[0],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.white : AppColors.primary,
+                        height: 1.1,
                       ),
+                    ),
+                    if (parts.length > 1 && parts[1].isNotEmpty)
                       Text(
                         parts[1],
                         style: TextStyle(
@@ -421,8 +435,7 @@ class FilterBottomSheet extends StatelessWidget {
                           height: 1.1,
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -437,45 +450,46 @@ class FilterBottomSheet extends StatelessWidget {
     HomeController controller, {
     required bool isBackCamera,
   }) {
-    final options = ['8MP', '12MP', '16MP', '32MP'];
     return Obx(() {
+      final options = isBackCamera
+          ? controller.getBackCameraOptions()
+          : controller.getFrontCameraOptions();
       final selected = isBackCamera
           ? controller.tempBackCamera.value
           : controller.tempFrontCamera.value;
-      return Row(
+      return Wrap(
+        spacing: 14,
+        runSpacing: 12,
         children: options.map((option) {
           final isSelected = selected == option;
-          return Padding(
-            padding: const EdgeInsets.only(right: 14.0),
-            child: GestureDetector(
-              onTap: () {
-                if (isBackCamera) {
-                  controller.tempBackCamera.value = option;
-                } else {
-                  controller.tempFrontCamera.value = option;
-                }
-              },
-              child: Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : Colors.grey.shade300,
-                    width: 1,
-                  ),
+          return GestureDetector(
+            onTap: () {
+              if (isBackCamera) {
+                controller.tempBackCamera.value = option;
+              } else {
+                controller.tempFrontCamera.value = option;
+              }
+            },
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primary
+                      : Colors.grey.shade300,
+                  width: 1,
                 ),
-                child: Center(
-                  child: Text(
-                    option,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : AppColors.primary,
-                    ),
+              ),
+              child: Center(
+                child: Text(
+                  option,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : AppColors.primary,
                   ),
                 ),
               ),

@@ -3,12 +3,14 @@ import '../../../../core/constants/app_colors.dart';
 
 class SpecChip extends StatelessWidget {
   final String iconPath;
+  final IconData? fallbackIcon;
   final String label;
   final String value;
 
   const SpecChip({
     super.key,
     required this.iconPath,
+    this.fallbackIcon,
     required this.label,
     required this.value,
   });
@@ -29,21 +31,27 @@ class SpecChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon Image
-          Image.asset(
-            iconPath,
-            width: 24,
-            height: 24,
-            fit: BoxFit.contain,
-            color: AppColors.primary,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.star_rounded,
-                size: 24,
-                color: AppColors.primary,
-              );
-            },
-          ),
+          // Icon Image or Icon Widget
+          iconPath.isNotEmpty
+              ? Image.asset(
+                  iconPath,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.contain,
+                  color: AppColors.primary,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      fallbackIcon ?? Icons.star_rounded,
+                      size: 24,
+                      color: AppColors.primary,
+                    );
+                  },
+                )
+              : Icon(
+                  fallbackIcon ?? Icons.star_rounded,
+                  size: 24,
+                  color: AppColors.primary,
+                ),
           const SizedBox(height: 10),
           
           // Spec Label

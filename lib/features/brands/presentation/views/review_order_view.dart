@@ -34,8 +34,6 @@ class ReviewOrderView extends StatelessWidget {
     final controller = Get.find<ApplicationProcessController>();
 
     final String modelName = product['model'] ?? product['name'] ?? '';
-    final String branchName = branch['name'] ?? 'King Mobile';
-    final String branchAddress = branch['address'] ?? '';
 
     // Calculate installment price dynamically based on product price and months
     int months = 6;
@@ -50,11 +48,27 @@ class ReviewOrderView extends StatelessWidget {
         : double.tryParse(product['price']?.toString() ?? '') ??
             double.tryParse(product['min_price']?.toString() ?? '') ??
             385000.0;
-    // Assume 10% down payment, remaining 90% is financed
-    final double monthlyAmount = (price * 0.9) / months;
+            
+    double advance = price * 0.10;
+    double monthlyAmount = (price * 0.9) / months;
+
+    final plans = product['installment_plans'] as List<dynamic>?;
+    if (plans != null) {
+      final matchingPlan = plans.firstWhereOrNull((p) {
+        final label = (p['label'] as String?)?.toLowerCase() ?? '';
+        final duration = '${p['duration_months']} months';
+        return label == plan.toLowerCase() || duration == plan.toLowerCase();
+      });
+      if (matchingPlan != null) {
+        advance = double.tryParse(matchingPlan['advance_amount']?.toString() ?? 
+                                  matchingPlan['advance_payment']?.toString() ?? '') ?? advance;
+        monthlyAmount = double.tryParse(matchingPlan['monthly_installment']?.toString() ?? '') ?? monthlyAmount;
+      }
+    }
     
-    // Format helper for monthly amount
+    // Format helpers
     final String monthlyFormatted = 'Rs. ${monthlyAmount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}/month';
+    final String advanceFormatted = 'Rs. ${advance.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
 
     // Mask CNIC number (Format: 35201-XXXXXXX-X)
     final String rawCnic = personalDetails['cnic'] ?? '';
@@ -131,15 +145,99 @@ class ReviewOrderView extends StatelessWidget {
                     modelName: modelName,
                     planName: plan,
                     monthlyFormatted: monthlyFormatted,
+                    advanceFormatted: advanceFormatted,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                  // 2. Pickup branch card
-                  _buildBranchCard(
-                    context: context,
-                    branchName: branchName,
-                    branchAddress: branchAddress,
+                  // PAYMENT METHOD SECTION
+                  const Text(
+                    'PAYMENT METHOD',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      letterSpacing: 0.5,
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                  Obx(() {
+                    final selectedMethod = controller.paymentMethod.value;
+                    return Row(
+                      children: [
+                        // Installment Option
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => controller.paymentMethod.value = 'installment',
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: selectedMethod == 'installment' ? const Color(0xFFF1F5F9) : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: selectedMethod == 'installment' ? AppColors.primary : const Color(0xFFE2E8F0),
+                                  width: selectedMethod == 'installment' ? 2 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    selectedMethod == 'installment'
+                                        ? Icons.check_box_rounded
+                                        : Icons.check_box_outline_blank_rounded,
+                                    color: selectedMethod == 'installment' ? AppColors.primary : const Color(0xFF94A3B8),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Installment',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Cash Option
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => controller.paymentMethod.value = 'cash',
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: selectedMethod == 'cash' ? const Color(0xFFF1F5F9) : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: selectedMethod == 'cash' ? AppColors.primary : const Color(0xFFE2E8F0),
+                                  width: selectedMethod == 'cash' ? 2 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    selectedMethod == 'cash'
+                                        ? Icons.check_box_rounded
+                                        : Icons.check_box_outline_blank_rounded,
+                                    color: selectedMethod == 'cash' ? AppColors.primary : const Color(0xFF94A3B8),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Cash',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                   const SizedBox(height: 24),
 
                   // 3. Personal Details header & summary card
@@ -276,6 +374,7 @@ class ReviewOrderView extends StatelessWidget {
     required String modelName,
     required String planName,
     required String monthlyFormatted,
+    required String advanceFormatted,
   }) {
     // Get product image
     final List<dynamic> images = product['images'] ?? [];
@@ -392,13 +491,13 @@ class ReviewOrderView extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.percent_rounded, color: Colors.white54, size: 14),
-                    SizedBox(width: 6),
+                    const Icon(Icons.percent_rounded, color: Colors.white54, size: 14),
+                    const SizedBox(width: 6),
                     Text(
-                      '10% Down Payment',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                      '$advanceFormatted Down Payment',
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                   ],
                 ),
@@ -410,101 +509,7 @@ class ReviewOrderView extends StatelessWidget {
     );
   }
 
-  // Branch Card
-  Widget _buildBranchCard({
-    required BuildContext context,
-    required String branchName,
-    required String branchAddress,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Yellow Location Icon
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.location_on_rounded,
-              color: AppColors.secondary,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Branch details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      branchName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        // Pop twice to return to Branch selection screen
-                        Navigator.of(context).pop(); // Pop ReviewOrder
-                        Navigator.of(context).pop(); // Pop ApplicationProcess
-                      },
-                      child: const Text(
-                        AppStrings.editText,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  branchAddress.replaceAll('\n', ', '),
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF855D11).withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.secondary, width: 0.5),
-                  ),
-                  child: const Text(
-                    AppStrings.verifiedLocation,
-                    style: TextStyle(
-                      color: AppColors.secondary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   // Section header
   Widget _buildSectionHeader({

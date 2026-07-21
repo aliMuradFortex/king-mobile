@@ -7,6 +7,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../controllers/product_detail_controller.dart';
 import '../widgets/spec_chip.dart';
 import '../widgets/plan_card.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProductDetailView extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -64,7 +65,14 @@ class ProductDetailView extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  final String modelName = product['name'] ?? product['model'] ?? 'King Mobile Product';
+                  final String shareUrl = 'https://kingmobiles.com.pk/products/${product['id']}';
+                  Share.share(
+                    'Check out this $modelName on King Mobiles: $shareUrl',
+                    subject: 'Check out this product on King Mobiles',
+                  );
+                },
                 icon: const Icon(
                   Icons.share_outlined,
                   color: AppColors.primary,
@@ -147,11 +155,7 @@ class ProductDetailView extends StatelessWidget {
         final String model =
             details['name'] ?? product['name'] ?? product['model'] ?? '';
 
-        final double price = (details['price'] is num)
-            ? (details['price'] as num).toDouble()
-            : double.tryParse(details['price']?.toString() ?? '') ??
-                  double.tryParse(product['min_price']?.toString() ?? '') ??
-                  0.0;
+        final double price = controller.activePrice;
         final String priceFormatted = price > 0
             ? 'Rs. ${controller.formatPrice(price)}'
             : '';
@@ -159,6 +163,59 @@ class ProductDetailView extends StatelessWidget {
         final List<dynamic> images = controller.productImages;
         final Map<String, dynamic> specs = controller.specs;
         final String selected = controller.selectedPlan.value;
+
+        final List<Widget> specChipsList = [];
+        specs.forEach((key, val) {
+          if (val == null || val.toString().isEmpty || val.toString().toLowerCase() == 'null' || val.toString().toLowerCase() == 'n/a') return;
+          
+          String label = key.toString().toUpperCase();
+          String iconPath = '';
+          IconData? fallbackIcon;
+
+          final kLower = key.toString().toLowerCase();
+          if (kLower == 'ram') {
+            label = AppStrings.specRam;
+            iconPath = AppAssets.specRamIcon;
+          } else if (kLower == 'storage') {
+            label = AppStrings.specStorage;
+            iconPath = AppAssets.specStorageIcon;
+          } else if (kLower == 'battery') {
+            label = AppStrings.specBattery;
+            iconPath = AppAssets.specBatteryIcon;
+          } else if (kLower == 'camera') {
+            label = AppStrings.specCamera;
+            iconPath = AppAssets.specCameraIcon;
+          } else if (kLower == 'display') {
+            label = AppStrings.specDisplay;
+            iconPath = AppAssets.specDisplayIcon;
+          } else if (kLower == 'os') {
+            label = 'OS';
+            fallbackIcon = Icons.android_rounded;
+          } else if (kLower == 'sim') {
+            label = 'SIM';
+            fallbackIcon = Icons.sim_card_outlined;
+          } else if (kLower == 'processor') {
+            label = 'Processor';
+            fallbackIcon = Icons.developer_board_rounded;
+          } else if (kLower == 'network') {
+            label = 'Network';
+            fallbackIcon = Icons.wifi_rounded;
+          } else if (kLower == 'weight') {
+            label = 'Weight';
+            fallbackIcon = Icons.scale_rounded;
+          } else {
+            fallbackIcon = Icons.info_outline_rounded;
+          }
+
+          specChipsList.add(
+            SpecChip(
+              iconPath: iconPath,
+              fallbackIcon: fallbackIcon,
+              label: label,
+              value: val.toString(),
+            ),
+          );
+        });
 
         return Column(
           children: [
@@ -338,129 +395,110 @@ class ProductDetailView extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
 
+                    // Variation Selector Section
+                    Obx(() {
+                      final vars = controller.variations;
+                      if (vars.isEmpty) return const SizedBox.shrink();
+                      
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'SELECT VARIATION',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF94A3B8),
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: List.generate(vars.length, (index) {
+                                final variation = vars[index] as Map<String, dynamic>;
+                                final isSelected = index == controller.selectedVariationIndex.value;
+                                
+                                final storageStr = variation['storage']?.toString() ?? '';
+                                final colorStr = variation['color']?.toString() ?? '';
+                                final label = [storageStr, colorStr].where((s) => s.isNotEmpty).join(' - ');
+                                
+                                return GestureDetector(
+                                  onTap: () {
+                                    controller.selectedVariationIndex.value = index;
+                                    final plans = controller.activeInstallmentPlans;
+                                    if (plans.isNotEmpty) {
+                                      controller.selectedPlan.value = plans.first['label'] ?? plans.first['name'] ?? '';
+                                    }
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.primary : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      label.isNotEmpty ? label : 'Option ${index + 1}',
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.white : AppColors.primary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      );
+                    }),
+
                     // 3. Key Specifications Section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Text(
-                            AppStrings.keySpecifications,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                    if (specChipsList.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Text(
+                              AppStrings.keySpecifications,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
+                          const SizedBox(height: 12),
 
-                        // Horizontal scrollable list of key specification chips
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: GridView.count(
-                            crossAxisCount: 3,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 1.05,
-                            children: [
-                              if (specs['ram'] != null)
-                                SpecChip(
-                                  iconPath: AppAssets.specRamIcon,
-                                  label: AppStrings.specRam,
-                                  value: specs['ram'].toString(),
-                                ),
-                              if (specs['storage'] != null)
-                                SpecChip(
-                                  iconPath: AppAssets.specStorageIcon,
-                                  label: AppStrings.specStorage,
-                                  value: specs['storage'].toString(),
-                                ),
-                              if (specs['battery'] != null)
-                                SpecChip(
-                                  iconPath: AppAssets.specBatteryIcon,
-                                  label: AppStrings.specBattery,
-                                  value: specs['battery'].toString(),
-                                ),
-                              if (specs['camera'] != null)
-                                SpecChip(
-                                  iconPath: AppAssets.specCameraIcon,
-                                  label: AppStrings.specCamera,
-                                  value: specs['camera'].toString(),
-                                ),
-                              if (specs['display'] != null)
-                                SpecChip(
-                                  iconPath: AppAssets.specDisplayIcon,
-                                  label: AppStrings.specDisplay,
-                                  value: specs['display'].toString(),
-                                ),
-                            ],
+                          // Dynamic list of key specification chips
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: GridView.count(
+                              crossAxisCount: 3,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.05,
+                              children: specChipsList,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 3.5 Reviews & Comments entry panel
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: InkWell(
-                        onTap: () => context.push('/comments', extra: product),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.comment_outlined,
-                                    color: AppColors.primary,
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'User Reviews & Comments',
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    '0 Comments',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade500,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.chevron_right_rounded,
-                                    color: Colors.grey.shade400,
-                                    size: 18,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                          const SizedBox(height: 24),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 24),
+
+                     const SizedBox(height: 24),
 
                     // 4. Installment plan selection area
                     Padding(

@@ -9,6 +9,9 @@ class ApplicationProcessController extends GetxController {
   // Wizard active step (1 or 2)
   final RxInt activeStep = 1.obs;
 
+  // Selected payment method ('installment' or 'cash')
+  final RxString paymentMethod = 'installment'.obs;
+
   // Form Fields Controllers
   final nameController = TextEditingController();
   final fatherNameController = TextEditingController();
@@ -250,8 +253,11 @@ class ApplicationProcessController extends GetxController {
     try {
       isSubmittingOrder.value = true;
 
-      int variationId = 1;
-      if (product['variations'] != null && (product['variations'] as List).isNotEmpty) {
+      int variationId = product['selected_variation_id'] is int 
+          ? product['selected_variation_id'] 
+          : int.tryParse(product['selected_variation_id']?.toString() ?? '') ?? 1;
+
+      if (variationId == 1 && product['variations'] != null && (product['variations'] as List).isNotEmpty) {
         final v = product['variations'].first;
         if (v is Map && v['id'] != null) {
           variationId = v['id'] is int ? v['id'] : int.tryParse(v['id'].toString()) ?? 1;
@@ -259,21 +265,36 @@ class ApplicationProcessController extends GetxController {
       }
 
       final int productId = product['id'] is int ? product['id'] : int.tryParse(product['id'].toString()) ?? 1;
-      final int branchId = branch['id'] is int ? branch['id'] : int.tryParse(branch['id'].toString()) ?? 1;
 
       final cleanCnic = personalDetails['cnic']?.replaceAll(RegExp(r'\D'), '') ?? '';
       
+      String phoneVal = personalDetails['phone'] ?? '';
+      phoneVal = phoneVal.replaceAll(RegExp(r'\D'), ''); // Strip non-digits
+      if (!phoneVal.startsWith('0') && phoneVal.isNotEmpty) {
+        phoneVal = '0$phoneVal';
+      }
+
+      int months = 6;
+      final RegExp regExp = RegExp(r'\d+');
+      final match = regExp.firstMatch(plan);
+      if (match != null) {
+        months = int.tryParse(match.group(0) ?? '') ?? 6;
+      }
+      
       final Map<String, dynamic> orderData = {
+        'product_id': productId,
         'website_product_id': productId,
+        'product_variation_id': variationId,
         'website_product_variation_id': variationId,
-        'branch_id': branchId,
         'name': personalDetails['name'] ?? '',
         'father_name': personalDetails['father_name'] ?? '',
-        'phone_no_1': '0${personalDetails['phone']}', // Ensure Pakistan format with leading 0
+        'phone_no_1': phoneVal,
         'cnic_number': cleanCnic,
         'address': "${personalDetails['address']}, ${personalDetails['city']}, ${personalDetails['postalCode']}, Pakistan",
         'cnic_front_path': frontCnicRelative,
         'cnic_back_path': backCnicRelative,
+        'payment_method': paymentMethod.value,
+        'installment_duration': months,
       };
 
       final response = await _apiService.createOrder(orderData);

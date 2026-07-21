@@ -43,4 +43,7 @@ abstract class ApiService {
 
   /// Updates user profile details (name and profile image path).
   Future<Map<String, dynamic>> updateProfile(String name, String? imagePath);
+
+  /// Retrieves the list of user's orders.
+  Future<Map<String, dynamic>> getMyOrders();
 }

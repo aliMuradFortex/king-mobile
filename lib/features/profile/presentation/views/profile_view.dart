@@ -286,7 +286,95 @@ class ProfileView extends StatelessWidget {
                       iconPath: AppAssets.helpAndSupport,
                       title: AppStrings.helpAndSupportLabel,
                       fallbackIcon: Icons.help_outline_rounded,
-                      onTap: () => context.push('/profile-settings'),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                          ),
+                          builder: (context) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 40,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  const Text(
+                                    'Contact Support',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Need help with your application or order? Contact our support team directly.',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildContactRow(
+                                    icon: Icons.phone_rounded,
+                                    title: 'Phone / WhatsApp',
+                                    value: '0304 5734595',
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildContactRow(
+                                    icon: Icons.email_rounded,
+                                    title: 'Email Address',
+                                    value: 'support@kingmobiles.com.pk',
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildContactRow(
+                                    icon: Icons.location_on_rounded,
+                                    title: 'Head Office',
+                                    value: '123 Main Street, Lahore, Pakistan',
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildContactRow(
+                                    icon: Icons.access_time_filled_rounded,
+                                    title: 'Operating Hours',
+                                    value: 'Monday - Saturday (10 AM - 8 PM)',
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 52,
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(26),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: const Text('Close'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
 
@@ -359,6 +447,51 @@ class ProfileView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildContactRow({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

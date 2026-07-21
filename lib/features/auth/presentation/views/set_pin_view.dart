@@ -34,7 +34,7 @@ class SetPinView extends StatelessWidget {
           ),
         ),
         title: const Text(
-          'Security PIN',
+          'Security Password',
           style: TextStyle(
             color: AppColors.primary,
             fontSize: 18,
@@ -66,7 +66,7 @@ class SetPinView extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.security_rounded,
+                            Icons.lock_rounded,
                             color: AppColors.secondaryDark,
                             size: 44,
                           ),
@@ -75,7 +75,7 @@ class SetPinView extends StatelessWidget {
                       const SizedBox(height: 28),
                       
                       const Text(
-                        'Set Security PIN',
+                        'Set Password',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.primary,
@@ -87,7 +87,7 @@ class SetPinView extends StatelessWidget {
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
-                          'Create a 4-digit security PIN to quickly log in and authorize requests.',
+                          'Create a secure password to secure your account.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Color(0xFF0F3A5F),
@@ -99,53 +99,76 @@ class SetPinView extends StatelessWidget {
                       ),
                       const SizedBox(height: 36),
                       
-                      // 4 dots representing the PIN digits
-                      Obx(() {
-                        final length = controller.pin.value.length;
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(4, (index) {
-                            final isFilled = index < length;
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              margin: const EdgeInsets.symmetric(horizontal: 12),
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isFilled
-                                    ? AppColors.primary
-                                    : const Color(0xFFE2E8F0),
-                                border: Border.all(
-                                  color: isFilled
-                                      ? AppColors.primary
-                                      : const Color(0xFFCBD5E1),
-                                  width: 2,
+                      // Password input field
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.grey.shade200,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Obx(() => TextField(
+                                controller: controller.passwordController,
+                                keyboardType: TextInputType.text,
+                                obscureText: controller.isPasswordObscured.value,
+                                obscuringCharacter: '•',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                  letterSpacing: controller.isPasswordObscured.value ? 2.0 : 1.0,
                                 ),
+                                decoration: const InputDecoration(
+                                  hintText: 'Password',
+                                  hintStyle: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF94A3B8),
+                                    letterSpacing: 1.0,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              )),
+                            ),
+                            Obx(() => IconButton(
+                              icon: Icon(
+                                controller.isPasswordObscured.value
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: Colors.grey.shade600,
+                                size: 20,
                               ),
-                            );
-                          }),
-                        );
-                      }),
+                              onPressed: controller.togglePasswordVisibility,
+                            )),
+                          ],
+                        ),
+                      ),
                       
                       const SizedBox(height: 48),
-                      
-                      // Custom Numeric Keypad
-                      _buildKeypad(controller),
                     ],
                   ),
                 ),
               ),
             ),
             
-            // Setup PIN Button
+            // Setup Password Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: Obx(() => ElevatedButton(
-                  onPressed: controller.isLoading.value || controller.pin.value.length < 4
+                  onPressed: controller.isLoading.value
                       ? null
                       : () => controller.submitPin(context),
                   style: ElevatedButton.styleFrom(
@@ -166,7 +189,7 @@ class SetPinView extends StatelessWidget {
                           ),
                         )
                       : const Text(
-                          'Setup PIN',
+                          'Setup Password',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -177,100 +200,6 @@ class SetPinView extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKeypad(SetPinController controller) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildKeypadButton('1', controller),
-            _buildKeypadButton('2', controller),
-            _buildKeypadButton('3', controller),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildKeypadButton('4', controller),
-            _buildKeypadButton('5', controller),
-            _buildKeypadButton('6', controller),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildKeypadButton('7', controller),
-            _buildKeypadButton('8', controller),
-            _buildKeypadButton('9', controller),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Backspace/delete button
-            _buildIconButton(
-              Icons.backspace_outlined,
-              controller.removeDigit,
-            ),
-            _buildKeypadButton('0', controller),
-            // Dummy spacer or checkmark button (we will submit using the bottom primary button)
-            const SizedBox(width: 72, height: 72),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildKeypadButton(String digit, SetPinController controller) {
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        shape: BoxShape.circle,
-      ),
-      child: InkWell(
-        onTap: () => controller.addDigit(digit),
-        borderRadius: BorderRadius.circular(36),
-        child: Center(
-          child: Text(
-            digit,
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIconButton(IconData icon, VoidCallback onTap) {
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        shape: BoxShape.circle,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(36),
-        child: Center(
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-            size: 24,
-          ),
         ),
       ),
     );

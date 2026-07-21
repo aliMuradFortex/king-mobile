@@ -170,7 +170,8 @@ class AppRouter {
       GoRoute(
         path: '/login',
         builder: (BuildContext context, GoRouterState state) {
-          return const LoginView();
+          final phone = state.uri.queryParameters['phone'];
+          return LoginView(phone: phone);
         },
       ),
       GoRoute(

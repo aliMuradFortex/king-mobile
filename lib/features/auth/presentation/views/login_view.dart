@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -9,11 +8,15 @@ import '../controllers/login_controller.dart';
 import '../widgets/phone_input_field.dart';
 
 class LoginView extends StatelessWidget {
-  const LoginView({super.key});
+  final String? phone;
+  const LoginView({super.key, this.phone});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(LoginController());
+    if (phone != null && phone!.isNotEmpty && controller.phoneController.text.isEmpty) {
+      controller.phoneController.text = phone!;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -111,9 +114,9 @@ class LoginView extends StatelessWidget {
                 PhoneInputField(controller: controller.phoneController),
                 const SizedBox(height: 24),
                 
-                // 6. Security PIN Label
+                // 6. Password Label
                 Text(
-                  'SECURITY PIN',
+                  'PASSWORD',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         fontSize: 12,
                         letterSpacing: 1.2,
@@ -123,7 +126,7 @@ class LoginView extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 
-                // 7. PIN Input Field
+                // 7. Password Input Field
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
@@ -141,30 +144,26 @@ class LoginView extends StatelessWidget {
                       Expanded(
                         child: Obx(() => TextField(
                           controller: controller.pinController,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.text,
                           obscureText: controller.isPinObscured.value,
                           obscuringCharacter: '•',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primary,
-                            letterSpacing: controller.isPinObscured.value ? 8.0 : 1.0,
+                            letterSpacing: controller.isPinObscured.value ? 2.0 : 1.0,
                           ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(4),
-                          ],
-                          decoration: InputDecoration(
-                            hintText: '••••',
-                            hintStyle: const TextStyle(
+                          decoration: const InputDecoration(
+                            hintText: 'Password',
+                            hintStyle: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF94A3B8),
-                              letterSpacing: 8.0,
+                              letterSpacing: 1.0,
                             ),
                             border: InputBorder.none,
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
                         )),
                       ),

@@ -8,6 +8,9 @@ class CustomSnackBar {
     String? title,
     bool isError = false,
   }) {
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     final snackBar = SnackBar(
       elevation: 6.0,
       behavior: SnackBarBehavior.floating,
@@ -15,7 +18,15 @@ class CustomSnackBar {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      dismissDirection: DismissDirection.up,
+      margin: EdgeInsets.only(
+        top: statusBarHeight + 8,
+        left: 16,
+        right: 16,
+        bottom: screenHeight - statusBarHeight - 120 > 0 
+            ? screenHeight - statusBarHeight - 120 
+            : 16,
+      ),
       content: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(

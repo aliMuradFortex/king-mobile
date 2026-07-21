@@ -1,7 +1,7 @@
 name: king_mobile
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.1+2
+version: 0.1.1+5
 
 environment:
   sdk: ^3.11.5
@@ -17,6 +17,7 @@ dependencies:
   go_router: ^17.2.3
   google_fonts: ^8.1.0
   image_picker: ^1.1.2
+  share_plus: ^13.2.1
 
 dev_dependencies:
   flutter_test:

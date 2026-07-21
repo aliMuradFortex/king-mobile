@@ -24,6 +24,9 @@ class ProductDetailController extends GetxController {
   // Selected plan option duration
   final RxString selectedPlan = '3 Months'.obs;
 
+  // Selected variation index
+  final RxInt selectedVariationIndex = 0.obs;
+
   final ApiService _apiService = DioApiService();
 
   @override
@@ -50,7 +53,7 @@ class ProductDetailController extends GetxController {
         
         final plans = activeInstallmentPlans;
         if (plans.isNotEmpty) {
-          selectedPlan.value = plans.first['name'] ?? '';
+          selectedPlan.value = plans.first['label'] ?? plans.first['name'] ?? '';
         }
       } else {
         errorMessage.value = response['message'] as String? ?? 'Failed to load product details.';
@@ -77,18 +80,70 @@ class ProductDetailController extends GetxController {
     return list.reversed.join();
   }
 
-  // Get active installment plans from the first active variation
-  List<Map<String, dynamic>> get activeInstallmentPlans {
+  // Get variations
+  List<dynamic> get variations {
     final details = productDetails;
     if (details.isNotEmpty && details['variations'] != null) {
-      final variations = details['variations'] as List<dynamic>;
-      if (variations.isNotEmpty) {
-        final firstVariation = variations.first;
-        if (firstVariation is Map && firstVariation['installment_plans'] != null) {
-          final plans = firstVariation['installment_plans'] as List<dynamic>;
-          return plans.whereType<Map<String, dynamic>>().toList();
-        }
+      return details['variations'] as List<dynamic>;
+    }
+    return [];
+  }
+
+  // Get active variation map
+  Map<String, dynamic>? get activeVariation {
+    final list = variations;
+    if (list.isNotEmpty) {
+      final index = selectedVariationIndex.value;
+      if (index >= 0 && index < list.length) {
+        return list[index] as Map<String, dynamic>;
       }
+      return list.first as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  // Get active price dynamically from chosen variation
+  double get activePrice {
+    final activeVar = activeVariation;
+    if (activeVar != null && activeVar['cash_price'] != null) {
+      return double.tryParse(activeVar['cash_price'].toString()) ?? 0.0;
+    }
+    final details = productDetails;
+    if (details.isNotEmpty) {
+      final p = details['cash_price'] ?? details['price'] ?? product['cash_price'] ?? product['price'] ?? product['min_price'];
+      if (p != null) {
+        return double.tryParse(p.toString()) ?? 0.0;
+      }
+    }
+    return 0.0;
+  }
+
+  // Get active advance dynamically from chosen variation
+  double get activeAdvanceAmount {
+    final activeVar = activeVariation;
+    if (activeVar != null && activeVar['advance_amount'] != null) {
+      return double.tryParse(activeVar['advance_amount'].toString()) ?? 0.0;
+    }
+    final details = productDetails;
+    if (details.isNotEmpty) {
+      final p = details['advance_amount'] ?? product['advance_amount'];
+      if (p != null) {
+        return double.tryParse(p.toString()) ?? 0.0;
+      }
+    }
+    return 0.0;
+  }
+
+  // Get active installment plans from the selected variation
+  List<Map<String, dynamic>> get activeInstallmentPlans {
+    final activeVar = activeVariation;
+    if (activeVar != null && activeVar['installment_plans'] != null) {
+      final plans = activeVar['installment_plans'] as List<dynamic>;
+      return plans.whereType<Map<String, dynamic>>().toList();
+    }
+    if (productDetails.isNotEmpty && productDetails['installment_plans'] != null) {
+      final plans = productDetails['installment_plans'] as List<dynamic>;
+      return plans.whereType<Map<String, dynamic>>().toList();
     }
     return [];
   }
@@ -98,13 +153,14 @@ class ProductDetailController extends GetxController {
     final officialPlans = activeInstallmentPlans;
     if (officialPlans.isNotEmpty) {
       return officialPlans.map((plan) {
-        final double advance = double.tryParse(plan['advance_payment']?.toString() ?? '') ?? 0.0;
+        final double advance = double.tryParse(plan['advance_amount']?.toString() ?? 
+                                               plan['advance_payment']?.toString() ?? '') ?? 0.0;
         final double monthly = double.tryParse(plan['monthly_installment']?.toString() ?? '') ?? 0.0;
-        final months = plan['number_of_months'] ?? 3;
+        final months = plan['duration_months'] ?? plan['number_of_months'] ?? 3;
         final total = double.tryParse(plan['total_amount']?.toString() ?? '') ?? 0.0;
         
         return {
-          'months': plan['name'] ?? '$months Months Plan',
+          'months': plan['label'] ?? '$months Months Plan',
           'monthlyPrice': 'Rs. ${formatPrice(monthly)}/mo',
           'isPopular': months == 6,
           'description': 'Rs. ${formatPrice(advance)} Down Payment • Total Rs. ${formatPrice(total)}',
@@ -112,12 +168,7 @@ class ProductDetailController extends GetxController {
       }).toList();
     }
 
-    final double price = (productDetails['price'] is num)
-        ? (productDetails['price'] as num).toDouble()
-        : double.tryParse(productDetails['price']?.toString() ?? '') ??
-            double.tryParse(product['min_price']?.toString() ?? '') ??
-            0.0;
-    
+    final double price = activePrice;
     if (price <= 0.0) return [];
 
     final double price3 = price / 3;
@@ -148,17 +199,19 @@ class ProductDetailController extends GetxController {
 
   // Get specs extracted from variations
   Map<String, dynamic> get specs {
-    final details = productDetails;
-    if (details.isNotEmpty && details['variations'] != null) {
-      final variations = details['variations'] as List<dynamic>;
-      if (variations.isNotEmpty) {
-        final firstVariation = variations.first;
-        if (firstVariation is Map && firstVariation['features'] != null) {
-          return _extractSpecs(firstVariation['features'] as List<dynamic>);
-        }
+    final activeVar = activeVariation;
+    if (activeVar != null) {
+      if (activeVar['specifications'] is Map) {
+        return activeVar['specifications'] as Map<String, dynamic>;
+      }
+      if (activeVar['features'] != null) {
+        return _extractSpecs(activeVar['features'] as List<dynamic>);
       }
     }
-    return product['specs'] ?? {};
+    if (productDetails.isNotEmpty && productDetails['specifications'] is Map) {
+      return productDetails['specifications'] as Map<String, dynamic>;
+    }
+    return product['specs'] ?? product['specifications'] ?? {};
   }
 
   Map<String, dynamic> _extractSpecs(List<dynamic> features) {
@@ -197,7 +250,7 @@ class ProductDetailController extends GetxController {
       if (list.isNotEmpty) {
         return list.map((item) {
           if (item is Map) {
-            return item['image_path'] ?? '';
+            return item['url'] ?? item['image_path'] ?? '';
           }
           return item.toString();
         }).toList();
@@ -222,11 +275,30 @@ class ProductDetailController extends GetxController {
   }
 
   void proceed(BuildContext context) {
+    final baseProduct = productDetails.isNotEmpty ? productDetails : product;
+    final Map<String, dynamic> mergedProduct = Map<String, dynamic>.from(baseProduct);
+    
+    final activeVar = activeVariation;
+    if (activeVar != null) {
+      mergedProduct['price'] = activeVar['cash_price'];
+      mergedProduct['cash_price'] = activeVar['cash_price'];
+      mergedProduct['advance_amount'] = activeVar['advance_amount'];
+      mergedProduct['specifications'] = activeVar['specifications'];
+      mergedProduct['installment_plans'] = activeVar['installment_plans'];
+      mergedProduct['selected_variation_id'] = activeVar['id'];
+      
+      mergedProduct['storage'] = activeVar['storage'];
+      mergedProduct['color'] = activeVar['color'];
+      mergedProduct['code'] = activeVar['code'];
+      mergedProduct['name'] = '${baseProduct['name'] ?? ''} (${activeVar['storage'] ?? ''} - ${activeVar['color'] ?? ''})';
+    }
+    
     context.push(
-      '/select-branch',
+      '/application-process',
       extra: {
-        'product': productDetails.isNotEmpty ? productDetails : product,
+        'product': mergedProduct,
         'plan': selectedPlan.value,
+        'branch': const <String, dynamic>{},
       },
     );
   }

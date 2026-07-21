@@ -45,17 +45,7 @@ class LoginController extends GetxController {
       CustomSnackBar.show(
         context,
         title: 'Required',
-        message: 'Please enter your PIN.',
-        isError: true,
-      );
-      return;
-    }
-
-    if (pin.length != 4) {
-      CustomSnackBar.show(
-        context,
-        title: 'Invalid PIN',
-        message: 'Security PIN must be exactly 4 digits.',
+        message: 'Please enter your password.',
         isError: true,
       );
       return;
@@ -65,6 +55,8 @@ class LoginController extends GetxController {
       isLoading.value = true;
       final response = await _apiService.login(phone, pin);
       isLoading.value = false;
+
+      if (!context.mounted) return;
 
       final success = response['success'] as bool? ?? false;
       final message =
@@ -101,12 +93,14 @@ class LoginController extends GetxController {
       }
     } catch (e) {
       isLoading.value = false;
-      CustomSnackBar.show(
-        context,
-        title: 'Login Error',
-        message: e.toString(),
-        isError: true,
-      );
+      if (context.mounted) {
+        CustomSnackBar.show(
+          context,
+          title: 'Login Error',
+          message: e.toString(),
+          isError: true,
+        );
+      }
     }
   }
 }
